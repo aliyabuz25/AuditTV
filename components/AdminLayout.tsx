@@ -19,6 +19,7 @@ import {
   Briefcase,
   Building2,
   Inbox,
+  Upload,
 } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 
@@ -142,6 +143,9 @@ const AdminLayout: React.FC = () => {
           </NavLink>
           <NavLink to="/admin/requests" className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}>
             <Inbox size={18} /> Müraciətlər
+          </NavLink>
+          <NavLink to="/admin/pdf-upload" className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}>
+            <Upload size={18} /> PDF Yükləmə
           </NavLink>
           <NavLink to="/admin/users" className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}>
             <UserCog size={18} /> Admin Hesabları

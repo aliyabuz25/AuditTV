@@ -27,6 +27,7 @@ import SeoSmtpManager from './pages/admin/SeoSmtpManager';
 import AdminUsersManager from './pages/admin/AdminUsersManager';
 import ContentManager from './pages/admin/ContentManager';
 import CourseRequestsManager from './pages/admin/CourseRequestsManager';
+import PdfUploadManager from './pages/admin/PdfUploadManager';
 import { SiteDataProvider } from './site/SiteDataContext';
 import { ToastProvider } from './components/ToastProvider';
 
@@ -83,6 +84,7 @@ const App: React.FC = () => {
               <Route path="contact" element={<ContactManager />} />
               <Route path="settings" element={<SeoSmtpManager />} />
               <Route path="requests" element={<CourseRequestsManager />} />
+              <Route path="pdf-upload" element={<PdfUploadManager />} />
               <Route path="content" element={<ContentManager />} />
               <Route path="users" element={<AdminUsersManager />} />
               <Route path="*" element={<Dashboard />} />
