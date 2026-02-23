@@ -198,8 +198,8 @@ export const defaultSitemap: Sitemap = {
         { id: 2, text: 'Excel Hesablama Modulu' },
       ],
       btnText: 'İndi Yüklə (Pulsuz)',
-      fileName: '',
-      fileUrl: '',
+      fileName: '1771664047371-132229953.pdf',
+      fileUrl: '/uploads/1771664047371-132229953.pdf',
     },
     podcastSection: {
       badge: 'audit.tv Podcast',
