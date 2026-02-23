@@ -1,7 +1,7 @@
 services:
   audittv-backend:
     build:
-      context: /datastore/audittv/app
+      context: .
       dockerfile: Dockerfile.backend
     image: audittv-backend:latest
     pull_policy: never
@@ -27,7 +27,7 @@ services:
 
   audittv-frontend:
     build:
-      context: /datastore/audittv/app
+      context: .
       dockerfile: Dockerfile.frontend
     image: audittv-frontend:latest
     pull_policy: never
