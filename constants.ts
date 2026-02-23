@@ -43,7 +43,7 @@ export const PODCAST_EPISODES: PodcastEpisode[] = [
     duration: '35 dəq',
     date: '24 Noyabr 2025',
     host: 'İbadət Binyətov',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77ac6d5?auto=format&fit=crop&q=80&w=800',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1515378791036-0648a814c963?auto=format&fit=crop&q=80&w=800',
     videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
   },
   {

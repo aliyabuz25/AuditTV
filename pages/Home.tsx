@@ -13,7 +13,9 @@ const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const Home: React.FC = () => {
   const { sitemap } = useSiteData();
   const toast = useToast();
-  const BLOG_POSTS = sitemap.blog.posts;
+  const BLOG_POSTS = Array.isArray(sitemap.blog.posts) ? sitemap.blog.posts : [];
+  const featuredBlog = BLOG_POSTS[0] || null;
+  const sidebarBlogs = BLOG_POSTS.slice(1, 5);
   const PODCAST_EPISODES = sitemap.podcast.episodes;
   const FINANCIAL_FACTS = sitemap.financialFacts;
   const FAQS = sitemap.faq.faqs;
@@ -234,27 +236,33 @@ const Home: React.FC = () => {
 
            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               <div className="lg:col-span-8">
-                 <Link to={`/blog/${BLOG_POSTS[0].id}`} className="group block bg-white rounded-[2.5rem] overflow-hidden edu-card-shadow border border-slate-100 h-full">
-                    <div className="aspect-[21/10] overflow-hidden">
-                       <img src={BLOG_POSTS[0].imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="" />
-                    </div>
-                    <div className="p-10">
-                       <div className="flex items-center gap-3 mb-6">
-                          <span className="px-3 py-1 bg-primary-50 text-primary-700 text-[10px] font-black uppercase tracking-widest rounded-lg">{BLOG_POSTS[0].category}</span>
-                          <span className="text-slate-300 text-sm font-medium">{BLOG_POSTS[0].date}</span>
-                       </div>
-                       <h3 className="text-4xl font-black text-slate-900 mb-6 group-hover:text-primary-600 transition-colors tracking-tight">
-                         {BLOG_POSTS[0].title}
-                       </h3>
-                       <p className="text-slate-600 text-lg leading-relaxed mb-8">
-                         {BLOG_POSTS[0].excerpt}
-                       </p>
-                    </div>
-                 </Link>
+                 {featuredBlog ? (
+                   <Link to={`/blog/${featuredBlog.id}`} className="group block bg-white rounded-[2.5rem] overflow-hidden edu-card-shadow border border-slate-100 h-full">
+                      <div className="aspect-[21/10] overflow-hidden">
+                         <img src={featuredBlog.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="" />
+                      </div>
+                      <div className="p-10">
+                         <div className="flex items-center gap-3 mb-6">
+                            <span className="px-3 py-1 bg-primary-50 text-primary-700 text-[10px] font-black uppercase tracking-widest rounded-lg">{featuredBlog.category}</span>
+                            <span className="text-slate-300 text-sm font-medium">{featuredBlog.date}</span>
+                         </div>
+                         <h3 className="text-4xl font-black text-slate-900 mb-6 group-hover:text-primary-600 transition-colors tracking-tight">
+                           {featuredBlog.title}
+                         </h3>
+                         <p className="text-slate-600 text-lg leading-relaxed mb-8">
+                           {featuredBlog.excerpt}
+                         </p>
+                      </div>
+                   </Link>
+                 ) : (
+                   <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 h-full flex items-center justify-center text-slate-400 font-bold">
+                     Hazirda blog melumati yoxdur.
+                   </div>
+                 )}
               </div>
 
               <div className="lg:col-span-4 flex flex-col gap-6">
-                 {BLOG_POSTS.slice(1, 5).map(post => (
+                 {sidebarBlogs.map(post => (
                    <Link key={post.id} to={`/blog/${post.id}`} className="group p-5 bg-white rounded-3xl border border-slate-100 hover:border-primary-100 hover:shadow-xl hover:shadow-primary-100/10 transition-all flex gap-5">
                       <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-slate-100">
                          <img src={post.imageUrl} className="w-full h-full object-cover" alt="" />

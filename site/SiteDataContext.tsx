@@ -15,37 +15,97 @@ const SiteDataContext = createContext<SiteDataContextType | null>(null);
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const SITEMAP_ENDPOINT = `${API_BASE}/api/sitemap`;
 
+const BROKEN_IMAGE_FRAGMENT = 'photo-1478737270239-2f02b77ac6d5';
+const FALLBACK_THUMBNAIL =
+  'https://images.unsplash.com/photo-1515378791036-0648a814c963?auto=format&fit=crop&q=80&w=1200';
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function mergeWithDefaults<T>(defaults: T, remote: unknown): T {
+  if (Array.isArray(defaults)) {
+    return (Array.isArray(remote) ? remote : defaults) as T;
+  }
+
+  if (isPlainObject(defaults)) {
+    const remoteObj = isPlainObject(remote) ? remote : {};
+    const merged: Record<string, unknown> = {};
+
+    for (const key of Object.keys(defaults)) {
+      merged[key] = mergeWithDefaults((defaults as Record<string, unknown>)[key], remoteObj[key]);
+    }
+
+    for (const [key, value] of Object.entries(remoteObj)) {
+      if (!(key in merged)) {
+        merged[key] = value;
+      }
+    }
+
+    return merged as T;
+  }
+
+  if (remote === undefined || remote === null) {
+    return defaults;
+  }
+
+  if (typeof defaults === 'string') {
+    return (typeof remote === 'string' ? remote : defaults) as T;
+  }
+
+  if (typeof defaults === 'number') {
+    return (typeof remote === 'number' && Number.isFinite(remote) ? remote : defaults) as T;
+  }
+
+  if (typeof defaults === 'boolean') {
+    return (typeof remote === 'boolean' ? remote : defaults) as T;
+  }
+
+  return remote as T;
+}
+
+function sanitizeImageUrl(url: string): string {
+  if (!url) return '';
+  if (url.includes(BROKEN_IMAGE_FRAGMENT)) return FALLBACK_THUMBNAIL;
+  return url;
+}
+
+function sanitizeSitemap(sitemap: Sitemap): Sitemap {
+  return {
+    ...sitemap,
+    blog: {
+      ...sitemap.blog,
+      posts: sitemap.blog.posts.map((post) => ({
+        ...post,
+        imageUrl: sanitizeImageUrl(String(post.imageUrl || '')),
+      })),
+    },
+    podcast: {
+      ...sitemap.podcast,
+      episodes: sitemap.podcast.episodes.map((episode) => ({
+        ...episode,
+        thumbnailUrl: sanitizeImageUrl(String(episode.thumbnailUrl || '')),
+      })),
+    },
+    education: {
+      ...sitemap.education,
+      courses: sitemap.education.courses.map((course) => ({
+        ...course,
+        thumbnailUrl: sanitizeImageUrl(String(course.thumbnailUrl || '')),
+      })),
+    },
+  };
+}
+
 async function fetchSitemap(): Promise<Sitemap> {
   const response = await fetch(SITEMAP_ENDPOINT);
   if (!response.ok) {
     throw new Error(`Sitemap fetch failed: ${response.status}`);
   }
   const payload = await response.json();
-  const remote = payload?.sitemap || payload;
-  return {
-    ...defaultSitemap,
-    ...(remote || {}),
-    settings: {
-      ...defaultSitemap.settings,
-      ...((remote || {}).settings || {}),
-      seo: {
-        ...defaultSitemap.settings.seo,
-        ...((remote || {}).settings?.seo || {}),
-      },
-      smtp: {
-        ...defaultSitemap.settings.smtp,
-        ...((remote || {}).settings?.smtp || {}),
-      },
-      branding: {
-        ...defaultSitemap.settings.branding,
-        ...((remote || {}).settings?.branding || {}),
-      },
-      footer: {
-        ...defaultSitemap.settings.footer,
-        ...((remote || {}).settings?.footer || {}),
-      },
-    },
-  };
+  const remote = payload?.sitemap ?? payload;
+  const merged = mergeWithDefaults(defaultSitemap, remote);
+  return sanitizeSitemap(merged);
 }
 
 export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
