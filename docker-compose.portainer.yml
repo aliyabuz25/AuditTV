@@ -1,6 +1,10 @@
 services:
   audittv-backend:
+    build:
+      context: /datastore/audittv/app
+      dockerfile: Dockerfile.backend
     image: audittv-backend:latest
+    pull_policy: never
     restart: unless-stopped
     environment:
       PORT: "3001"
@@ -22,7 +26,11 @@ services:
       - 'traefik.http.services.audittv-api.loadbalancer.server.port=3001'
 
   audittv-frontend:
+    build:
+      context: /datastore/audittv/app
+      dockerfile: Dockerfile.frontend
     image: audittv-frontend:latest
+    pull_policy: never
     restart: unless-stopped
     volumes:
       - /datastore/audittv/nginx-logs:/app/nginx-logs
