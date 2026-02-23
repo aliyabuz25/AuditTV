@@ -1,0 +1,22 @@
+services:
+  api:
+    build: .
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run api
+
+  app:
+    build: .
+    depends_on:
+      - api
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env.local
+    environment:
+      - VITE_API_PROXY_TARGET=http://api:3001
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 5173

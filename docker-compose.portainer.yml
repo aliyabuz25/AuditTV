@@ -1,0 +1,40 @@
+services:
+  audittv-backend:
+    image: audittv-backend:latest
+    restart: unless-stopped
+    environment:
+      PORT: "3001"
+      SQLITE_PATH: "/app/data/site.db"
+      SITEMAP_FILE: "/app/data/current-sitemap.json"
+      UPLOADS_DIR: "/app/uploads"
+      PUBLIC_BASE_URL: "https://audittv.az"
+    volumes:
+      - /datastore/audittv/uploads:/app/uploads
+      - /datastore/audittv/data:/app/data
+    networks:
+      - edge
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=edge'
+      - 'traefik.http.routers.audittv-api.rule=Host(`audittv.az`) && (PathPrefix(`/api`) || PathPrefix(`/uploads`))'
+      - 'traefik.http.routers.audittv-api.entrypoints=web'
+      - 'traefik.http.routers.audittv-api.priority=100'
+      - 'traefik.http.services.audittv-api.loadbalancer.server.port=3001'
+
+  audittv-frontend:
+    image: audittv-frontend:latest
+    restart: unless-stopped
+    volumes:
+      - /datastore/audittv/nginx-logs:/app/nginx-logs
+    networks:
+      - edge
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=edge'
+      - 'traefik.http.routers.audittv.rule=Host(`audittv.az`)'
+      - 'traefik.http.routers.audittv.entrypoints=web'
+      - 'traefik.http.services.audittv.loadbalancer.server.port=80'
+
+networks:
+  edge:
+    external: true

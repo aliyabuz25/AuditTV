@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --omit=dev
+
+COPY server ./server
+COPY current-sitemap.json ./current-sitemap.json
+
+EXPOSE 3001
+
+ENV HOST=0.0.0.0
+ENV PORT=3001
+ENV PUBLIC_BASE_URL=
+
+CMD ["node", "server/index.js"]

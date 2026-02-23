@@ -1,0 +1,669 @@
+{
+  "navLinks": [
+    {
+      "name": "Ana Səhifə",
+      "path": "/"
+    },
+    {
+      "name": "Haqqımızda",
+      "path": "/haqqimizda"
+    },
+    {
+      "name": "Podcast",
+      "path": "/podcast"
+    },
+    {
+      "name": "Tədris",
+      "path": "/tedris"
+    },
+    {
+      "name": "Blog",
+      "path": "/blog"
+    }
+  ],
+  "topics": [
+    {
+      "id": "tax",
+      "name": "Vergi",
+      "icon": "Calculator",
+      "count": "45+ Dərs"
+    },
+    {
+      "id": "audit",
+      "name": "Audit",
+      "icon": "ShieldCheck",
+      "count": "32+ Analiz"
+    },
+    {
+      "id": "finance",
+      "name": "Maliyyə",
+      "icon": "TrendingUp",
+      "count": "28+ Resurs"
+    },
+    {
+      "id": "hr",
+      "name": "HR & Kadrlar",
+      "icon": "Users",
+      "count": "15+ Rəhbər"
+    },
+    {
+      "id": "tech",
+      "name": "Texnologiya",
+      "icon": "FileText",
+      "count": "12+ İnnovasiya"
+    },
+    {
+      "id": "edu",
+      "name": "Tədris",
+      "icon": "Briefcase",
+      "count": "20+ Kurs"
+    }
+  ],
+  "financialFacts": [
+    {
+      "id": 1,
+      "text": "Bilirsinizmi? 2024-cü ildə kiçik bizneslərdə vergi yoxlamalarının 40%-i sadə sənəd xətalarına görə baş verib.",
+      "icon": "AlertCircle"
+    },
+    {
+      "id": 2,
+      "text": "Audit hesabatı olan şirkətlər banklardan kredit alarkən 20% daha aşağı faiz dərəcəsi əldə edə bilirlər.",
+      "icon": "TrendingUp"
+    },
+    {
+      "id": 3,
+      "text": "Rəqəmsal mühasibatlığa keçid əməliyyat xərclərini orta hesabla 35% azaldır.",
+      "icon": "Cpu"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Kamran Vəliyev",
+      "role": "Sahibkar",
+      "text": "Audit.tv-dən aldığım vergi rəhbəri sayəsində şirkətimin illik xərclərini 15% optimallaşdırdım.",
+      "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100"
+    },
+    {
+      "id": 2,
+      "name": "Günel Əzimova",
+      "role": "Baş Mühasib",
+      "text": "ACCA hazırlıq dərsləri o qədər praktiki idi ki, imtahanı birinci cəhddən keçdim.",
+      "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100"
+    }
+  ],
+  "services": [
+    {
+      "id": "1",
+      "title": "Maliyyə Auditi",
+      "description": "Şirkətinizin maliyyə hesabatlarının beynəlxalq standartlara uyğunluğunun yoxlanılması.",
+      "iconName": "ShieldCheck",
+      "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800"
+    }
+  ],
+  "clients": [
+    {
+      "id": "1",
+      "name": "Azfin MMC",
+      "logoUrl": ""
+    }
+  ],
+  "home": {
+    "hero": {
+      "title": "İndi Öyrən, Dərhal Tətbiq Et",
+      "sub": "Sahibkarlar və maliyyəçilər üçün peşəkar maarifləndirmə platforması. Pulsuz rəhbərlər və ekspert kursları ilə biznesinizi növbəti səviyyəyə daşıyın.",
+      "btn1Text": "Podcastlara Bax",
+      "btn1Link": "/podcast",
+      "btn2Text": "Bloglar",
+      "btn2Link": "/blog"
+    },
+    "benefit": {
+      "header": "Həftənin Faydası",
+      "desc": "Bu həftənin xüsusi resursu: \"2026 Vergi Təqvimi və Audit Checklist\"",
+      "items": [
+        {
+          "id": 1,
+          "text": "Pulsuz PDF Rəhbər"
+        },
+        {
+          "id": 2,
+          "text": "Excel Hesablama Modulu"
+        }
+      ],
+      "btnText": "İndi Yüklə (Pulsuz)",
+      "fileName": "",
+      "fileUrl": ""
+    },
+    "podcastSection": {
+      "badge": "audit.tv Podcast",
+      "title": "Maliyyə Söhbətləri",
+      "sub": "Hər həftə yeni epizodlarla biliklərinizi yeniləyin.",
+      "btnText": "Hamısına Bax"
+    },
+    "headers": {
+      "targetsTitle": "Bu platforma kimlər üçündür?",
+      "factsTitle": "Bilik Sandığı",
+      "factsSub": "Sahibkarlar və maliyyəçilər üçün vacib məlumatlar",
+      "blogTitle": "Ekspert Analizləri",
+      "blogSub": "Günün ən vacib maliyyə və vergi mövzuları",
+      "blogCardTitle": "Bütün məqalələrə keç",
+      "blogCardSub": "600-dən çox elmi və praktiki məqalə.",
+      "faqTitle": "Tez-tez Verilən Suallar",
+      "faqSub": "Sizi maraqlandıran suallara dərhal cavab tapın",
+      "newsTitle": "Maliyyə Nəbzini Tutun",
+      "newsSub": "Hər həftənin vergi yenilikləri və maliyyə analizləri birbaşa e-poçtunuza gəlsin.",
+      "newsBtnText": "Abunə Ol"
+    },
+    "targets": [
+      {
+        "title": "Sahibkarlar",
+        "desc": "Biznesin maliyyə risklərini anlamaq və vergi optimallaşdırmasını öyrənmək üçün.",
+        "icon": "Briefcase"
+      },
+      {
+        "title": "Mühasiblər",
+        "desc": "Peşəkar biliklərini yeniləmək və beynəlxalq standartları (MHBS) mənimsəmək üçün.",
+        "icon": "Calculator"
+      },
+      {
+        "title": "Maliyyəçilər",
+        "desc": "Data analitikasını, büdcə planlamasını və hesabatlılıq sistemlərini təkmilləşdirmək üçün.",
+        "icon": "PieChart"
+      },
+      {
+        "title": "Tələbələr",
+        "desc": "Karyera yolunda ilk addımlarını praktiki biliklərlə və real keyslərlə atmaq üçün.",
+        "icon": "UserCheck"
+      }
+    ],
+    "facts": [
+      {
+        "text": "Bilirsinizmi? 2024-cü ildə kiçik bizneslərdə vergi yoxlamalarının 40%-i sadə sənəd xətalarına görə baş verib.",
+        "icon": "AlertCircle"
+      }
+    ]
+  },
+  "about": {
+    "hero": {
+      "badge": "Peşəkarlıq & Etimad",
+      "title": "Maliyyənin",
+      "spanTitle": "Rəqəmsal Səsi",
+      "sub": "Biz sadəcə audit şirkəti deyilik. audit.tv — Azərbaycanın maliyyə ekosistemini bilik, innovasiya və şəffaflıqla gücləndirən hibrid platformadır.",
+      "stat1Year": "2015",
+      "stat1Label": "Yaranma ili",
+      "stat2Val": "100+",
+      "stat2Label": "Audit Layihəsi",
+      "stat3Val": "15K+",
+      "stat3Label": "Tələbə İcması",
+      "satisfactionRate": "98%",
+      "satisfactionLabel": "Müştəri Məmnuniyyəti"
+    },
+    "narrative": {
+      "title": "Biz Kimik?",
+      "quote": "\"Biliyin hər kəs üçün əlçatan olması biznesin davamlı inkişafının yeganə yoludur.\"",
+      "para1": "Audit.tv-nin təməli 2015-ci ildə bir qrup beynəlxalq dərəcəli auditor və maliyyə eksperti tərəfindən qoyulmuşdur. Məqsədimiz yerli bazarın spesifikasını nəzərə alaraq, şirkətlərə qlobal standartlarda audit xidməti təqdim etmək idi.",
+      "para2": "Lakin zamanla anladıq ki, bazarda yalnız yoxlama deyil, həm də maarifləndirmə ehtiyacı var. Beləliklə, biz audit fəaliyyətimizi media və tədrislə birləşdirərək Azərbaycanın ilk onlayn maliyyə akademiyasını yaratdıq."
+    },
+    "values": [
+      {
+        "icon": "ShieldCheck",
+        "title": "Dürüstlük",
+        "desc": "Bütün hesabatlarımızda qərəzsizlik və şəffaflıq prinsipinə sadiqik."
+      },
+      {
+        "icon": "Lightbulb",
+        "title": "İnnovasiya",
+        "desc": "Auditdə süni intellekt və data analitikasını tətbiq edirik."
+      },
+      {
+        "icon": "Globe",
+        "title": "Beynəlxalq Baxış",
+        "desc": "IFRS və ISA standartlarını yerli biznesə inteqrasiya edirik."
+      },
+      {
+        "icon": "Target",
+        "title": "Nəticə",
+        "desc": "Bizim üçün əsas hədəf müştərinin real qənaəti və inkişafıdır."
+      }
+    ],
+    "whyUs": {
+      "title": "NİYƏ",
+      "spanTitle": "AUDİT TV?",
+      "items": [
+        {
+          "icon": "Cpu",
+          "title": "İntellektual Metodologiya",
+          "desc": "Biz auditi köhnə üsullarla deyil, 2026-cı ilin rəqəmsal alqoritmləri ilə həyata keçiririk.",
+          "number": "01"
+        },
+        {
+          "icon": "Shield",
+          "title": "Mütləq Şəffaflıq",
+          "desc": "Hər bir hesabat real vaxt rejimində izlənilə bilən şəffaflıq standartlarına əsaslanır.",
+          "number": "02"
+        },
+        {
+          "icon": "UserCheck",
+          "title": "Ekspert Rəhbərliyi",
+          "desc": "Platformamızda yalnız sahə üzrə real təcrübəyə malik peşəkarlar fəaliyyət göstərir.",
+          "number": "03"
+        }
+      ]
+    },
+    "vision": {
+      "badge": "Gələcəyə Baxış",
+      "title": "Vizyon",
+      "spanTitle": "2030",
+      "sub": "Bizim hədəfimiz 2030-cu ilə qədər Azərbaycanın maliyyə sektorunu rəqəmsallaşdıraraq, regionun ən innovativ audit mərkəzinə çevrilməkdir.",
+      "goals": [
+        "Audit fəaliyyətinin 90% avtomatlaşdırılması",
+        "100,000+ maliyyə mütəxəssisinin təlimatlandırılması",
+        "Süni intellekt əsaslı daxili nəzarət modulları"
+      ]
+    },
+    "team": [
+      {
+        "id": "1",
+        "name": "İbadət Binyətov",
+        "role": "Təsisçi & Baş Auditor",
+        "imageUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+        "bio": "15 illik audit və maliyyə təcrübəsi ilə platformanın baş eksperti."
+      }
+    ]
+  },
+  "blog": {
+    "pageHeader": {
+      "badge": "EKSPERT BLOQU",
+      "title": "Faydalı Məqalələr və Analizlər",
+      "sub": "Günün ən vacib maliyyə və vergi mövzuları haqqında peşəkar rəylər."
+    },
+    "posts": [
+      {
+        "id": "demo-blog-1",
+        "title": "Kiçik Bizneslər üçün Vergi Risk Xəritəsi",
+        "excerpt": "Vergi risklərinin böyük hissəsi sənədləşmə intizamındakı boşluqlardan başlayır....",
+        "date": "21 fevral 2026",
+        "author": "Admin",
+        "imageUrl": "https://images.unsplash.com/photo-1554224155-1696413565d3?auto=format&fit=crop&q=80&w=1200",
+        "category": "Vergi",
+        "status": "published",
+        "blocks": [
+          {
+            "id": "b1",
+            "type": "heading",
+            "content": "Risklər Harada Yaranır?"
+          },
+          {
+            "id": "b2",
+            "type": "paragraph",
+            "content": "<p>Vergi risklərinin böyük <strong>hissəsi</strong> sənədləşmə intizamındakı boşluqlardan başlayır.</p>"
+          }
+        ]
+      },
+      {
+        "id": "demo-blog-2",
+        "title": "Daxili Audit üçün 90 Günlük Plan",
+        "excerpt": "Şirkət daxilində audit sistemini sıfırdan qurmaq üçün mərhələli plan.",
+        "date": "21 fevral 2026",
+        "author": "Admin",
+        "imageUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=1200",
+        "category": "Audit",
+        "status": "published",
+        "blocks": [
+          {
+            "id": "b1",
+            "type": "heading",
+            "content": "İlk 30 Gün"
+          },
+          {
+            "id": "b2",
+            "type": "paragraph",
+            "content": "<p>Proses xəritəsi çıxarılır və nəzarət nöqtələri təyin edilir.</p>"
+          }
+        ]
+      },
+      {
+        "id": "demo-blog-3",
+        "title": "Cashflow Analizi: Sadə Model",
+        "excerpt": "Nağd axının idarəsi üçün komandaların dərhal istifadə edə biləcəyi model.",
+        "date": "21 fevral 2026",
+        "author": "Admin",
+        "imageUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200",
+        "category": "Maliyyə",
+        "status": "published",
+        "blocks": [
+          {
+            "id": "b1",
+            "type": "paragraph",
+            "content": "<p>Aylıq cashflow hesabatı qərarvermənin sürətini artırır.</p>"
+          }
+        ]
+      }
+    ]
+  },
+  "education": {
+    "pageHeader": {
+      "badge": "ONLİNE AKADEMİYA",
+      "title": "Peşəkarınızı Bizimlə Artırın",
+      "sub": "Yerli qanunvericilik və beynəlxalq standartlar əsasında hazırlanmış praktiki kurslar."
+    },
+    "courses": [
+      {
+        "id": "101",
+        "title": "Praktiki Mühasibatlıq: Sıfırdan Peşəkara",
+        "instructor": "İbadət Binyətov",
+        "price": 150,
+        "duration": "32 saat",
+        "level": "Başlanğıc",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=800",
+        "rating": 4.9,
+        "description": "Mühasibat uçotunun bütün incəliklərini real keyslər üzərindən öyrənin.",
+        "longDescription": "Bu kurs mühasibat sahəsində karyera qurmaq istəyənlər üçün nəzərdə tutulub. Biz nəzəriyyədən daha çox praktikaya üstünlük veririk. Kursun sonunda siz sərbəst şəkildə müəssisənin uçotunu qura biləcəksiniz.",
+        "learningOutcomes": [
+          "Hesablar planının sərbəst istifadəsi",
+          "Vergi bəyannamələrinin hazırlanması",
+          "1C proqramında işləmək bacarığı",
+          "İllik maliyyə hesabatlarının tərtibi"
+        ],
+        "requirements": [
+          "İlkin kompüter bilikləri",
+          "Riyazi təfəkkür",
+          "Öyrənmək istəyi"
+        ],
+        "studentCount": 1240,
+        "modules": [
+          {
+            "id": "m1",
+            "title": "Giriş və Əsas Anlayışlar",
+            "lessons": [
+              {
+                "id": "l1",
+                "title": "Kurs haqqında ümumi məlumat",
+                "duration": "05:20",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                "isPreview": true
+              },
+              {
+                "id": "l2",
+                "title": "Əsas terminologiya və standartlar",
+                "duration": "12:45",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+              }
+            ]
+          },
+          {
+            "id": "m2",
+            "title": "Praktiki Tətbiqlər",
+            "lessons": [
+              {
+                "id": "l3",
+                "title": "Sənədləşmə ilə iş: Real Keyslər",
+                "duration": "22:10",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+              },
+              {
+                "id": "l4",
+                "title": "Hesabatların tərtibi",
+                "duration": "18:30",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+              }
+            ]
+          }
+        ],
+        "perks": [
+          "Ömürlük giriş",
+          "Rəsmi Sertifikat",
+          "Mentor Dəstəyi"
+        ]
+      },
+      {
+        "id": "102",
+        "title": "Audit və Daxili Nəzarət Sistemi",
+        "instructor": "Aysel Əliyeva",
+        "price": 250,
+        "duration": "24 saat",
+        "level": "Orta",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800",
+        "rating": 4.8,
+        "description": "Biznes proseslərin yoxlanılması və risklərin idarə olunması.",
+        "longDescription": "Şirkətin daxili nəzarət mexanizmlərinin necə işlədiyini və auditin əsas prinsiplərini dərindən mənimsəyin. Beynəlxalq audit standartları (ISA) əsasında hazırlanmış proqramdır.",
+        "learningOutcomes": [
+          "Audit risklərinin qiymətləndirilməsi",
+          "Daxili nəzarət testlərinin keçirilməsi",
+          "Audit hesabatının hazırlanması"
+        ],
+        "requirements": [
+          "İlkin mühasibatlıq biliyi",
+          "Maliyyə hesabatlarını oxuma bacarığı"
+        ],
+        "studentCount": 850,
+        "modules": [
+          {
+            "id": "m1",
+            "title": "Giriş və Əsas Anlayışlar",
+            "lessons": [
+              {
+                "id": "l1",
+                "title": "Kurs haqqında ümumi məlumat",
+                "duration": "05:20",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                "isPreview": true
+              },
+              {
+                "id": "l2",
+                "title": "Əsas terminologiya və standartlar",
+                "duration": "12:45",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+              }
+            ]
+          },
+          {
+            "id": "m2",
+            "title": "Praktiki Tətbiqlər",
+            "lessons": [
+              {
+                "id": "l3",
+                "title": "Sənədləşmə ilə iş: Real Keyslər",
+                "duration": "22:10",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+              },
+              {
+                "id": "l4",
+                "title": "Hesabatların tərtibi",
+                "duration": "18:30",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+              }
+            ]
+          }
+        ],
+        "perks": [
+          "ISA Standartları",
+          "Real Case Study-lər",
+          "Sertifikat"
+        ]
+      },
+      {
+        "id": "103",
+        "title": "Excel for Finance: Professional Masterclass",
+        "instructor": "Rəşad Qasımov",
+        "price": 99,
+        "duration": "18 saat",
+        "level": "Orta",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&q=80&w=800",
+        "rating": 5,
+        "description": "Maliyyə analizi və modelləşdirmə üçün Excel-in gücündən istifadə edin.",
+        "longDescription": "Yalnız cədvəllər yox, həm də mürəkkəb maliyyə modelləri qurmağı öyrənin. Pivot, VLOOKUP və mürəkkəb formullarla işləməyi avtomatlaşdırın.",
+        "learningOutcomes": [
+          "Dinamik dashboard-ların qurulması",
+          "Maliyyə proqnozlaşdırma modelləri",
+          "Böyük data ilə sürətli işləmə"
+        ],
+        "requirements": [
+          "Bazis Excel biliyi"
+        ],
+        "studentCount": 2100,
+        "modules": [
+          {
+            "id": "m1",
+            "title": "Giriş və Əsas Anlayışlar",
+            "lessons": [
+              {
+                "id": "l1",
+                "title": "Kurs haqqında ümumi məlumat",
+                "duration": "05:20",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                "isPreview": true
+              },
+              {
+                "id": "l2",
+                "title": "Əsas terminologiya və standartlar",
+                "duration": "12:45",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+              }
+            ]
+          },
+          {
+            "id": "m2",
+            "title": "Praktiki Tətbiqlər",
+            "lessons": [
+              {
+                "id": "l3",
+                "title": "Sənədləşmə ilə iş: Real Keyslər",
+                "duration": "22:10",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+              },
+              {
+                "id": "l4",
+                "title": "Hesabatların tərtibi",
+                "duration": "18:30",
+                "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+              }
+            ]
+          }
+        ],
+        "perks": [
+          "Excel Şablonları",
+          "Video Dərslər",
+          "Mentor Dəstəyi"
+        ]
+      }
+    ]
+  },
+  "podcast": {
+    "pageHeader": {
+      "badge": "AUDİT.TV PODCAST",
+      "title": "Maliyyə Söhbətləri",
+      "description": "Maliyyə, audit və biznes dünyasının nəbzini tutan eksklüziv müsahibələr. Hər həftə yeni epizodlarla biliklərinizi yeniləyin.",
+      "buttonText": "Hamısına Bax"
+    },
+    "episodes": [
+      {
+        "id": "demo-ep-2",
+        "title": "IFRS Keçidində 5 Kritik Nöqtə",
+        "description": "Maliyyə komandalarının ən çox səhv etdiyi keçid mərhələləri.",
+        "duration": "31 dəq",
+        "date": "21 fevral 2026",
+        "host": "Admin",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1552581234-26160f608093?auto=format&fit=crop&q=80&w=1200",
+        "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+      },
+      {
+        "id": "demo-ep-3",
+        "title": "Audit Komandasının KPI-ları",
+        "description": "Effektiv audit performansı üçün ölçülə bilən göstəricilər.",
+        "duration": "24 dəq",
+        "date": "21 fevral 2026",
+        "host": "Admin",
+        "thumbnailUrl": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&q=80&w=1200",
+        "videoUrl": "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+      }
+    ]
+  },
+  "faq": {
+    "faqs": [
+      {
+        "q": "Audit xidməti mənə nə üçün lazımdır?",
+        "a": "Audit yalnız qanuni tələb deyil, həm də biznesinizin daxili zəif nöqtələrini görmək və riskləri önləmək üçün ən yaxşı vasitədir."
+      },
+      {
+        "q": "Kursları bitirdikdə sertifikat verilir?",
+        "a": "Bəli, hər bir kursun sonunda imtahandan keçən tələbələrə beynəlxalq standartlara uyğun daxili sertifikat təqdim olunur."
+      },
+      {
+        "q": "Vergi bəyannamələrini özüm doldura bilərəm?",
+        "a": "Bəli, bizim 'Praktiki Vergi' kursumuzla siz bütün bəyannamələri sərbəst doldurmağı öyrənəcəksiniz."
+      }
+    ]
+  },
+  "contact": {
+    "address": "Bakı şəhəri, Nizami küçəsi 14",
+    "phone": "+994 50 123 45 67",
+    "email": "info@audit.tv",
+    "responseTime": "Biz adətən 1 saat ərzində müraciətlərə baxırıq."
+  },
+  "settings": {
+    "seo": {
+      "title": "audit.tv - Bilik və Təcrübə Platforması",
+      "description": "Maliyyə savadlılığı və peşəkar inkişaf üçün onlayn media və tədris platforması.",
+      "keywords": "audit, vergi, maliyyə, podcast, tədris",
+      "canonicalUrl": "https://audit.tv"
+    },
+    "smtp": {
+      "host": "",
+      "port": 587,
+      "username": "",
+      "password": "",
+      "secure": false,
+      "fromEmail": "no-reply@audit.tv",
+      "fromName": "audit.tv"
+    },
+    "branding": {
+      "logoUrl": "/uploads/1771681147235-999753825.png",
+      "siteName": ""
+    },
+    "footer": {
+      "aboutText": "Maliyyə savadlılığı və peşəkar inkişaf üçün onlayn media və tədris platforması.",
+      "platformTitle": "Platforma",
+      "resourcesTitle": "Resurslar",
+      "contactTitle": "Əlaqə",
+      "address": "Bakı şəhəri, Nizami küç. 14",
+      "phone": "+994 50 123 45 67",
+      "email": "info@audit.tv",
+      "platformLinks": [
+        {
+          "label": "Haqqımızda",
+          "path": "/haqqimizda"
+        },
+        {
+          "label": "Əlaqə",
+          "path": "/elaqe"
+        }
+      ],
+      "resourceLinks": [
+        {
+          "label": "Tədris Mərkəzi",
+          "path": "/tedris"
+        },
+        {
+          "label": "Podcast",
+          "path": "/podcast"
+        },
+        {
+          "label": "Blog",
+          "path": "/blog"
+        }
+      ],
+      "socialLinks": {
+        "linkedin": "#",
+        "facebook": "#",
+        "twitter": "#",
+        "email": "mailto:info@audit.tv"
+      },
+      "copyrightText": "audit.tv. All rights reserved.",
+      "privacyLabel": "Məxfilik Siyasəti",
+      "privacyUrl": "#",
+      "termsLabel": "İstifadə Şərtləri",
+      "termsUrl": "#"
+    }
+  }
+}
