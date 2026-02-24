@@ -102,64 +102,68 @@ const CourseRequestsManager: React.FC = () => {
 
   const handleExportExcel = () => {
     const toTypeLabel = (type: RequestType) => {
-      if (type === 'course') return 'KURS';
-      if (type === 'contact') return 'ELAQE';
-      return 'NEWSLETTER';
+      if (type === 'course') return 'Kurs';
+      if (type === 'contact') return 'Əlaqə';
+      return 'Newsletter';
     };
 
     const toStatusLabel = (status: string) => {
-      if (status === 'approved') return 'APPROVED';
-      if (status === 'resolved') return 'RESOLVED';
-      if (status === 'rejected') return 'REJECTED';
-      return 'PENDING';
+      if (status === 'approved') return 'Təsdiqləndi';
+      if (status === 'resolved') return 'Bağlandı';
+      if (status === 'rejected') return 'Rədd edildi';
+      return 'Gözləmədə';
     };
 
     const reportDate = new Date();
+    const shortText = (value?: string, max = 220) => {
+      const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+      if (!normalized) return '';
+      return normalized.length > max ? `${normalized.slice(0, max - 1)}…` : normalized;
+    };
+
     const rows = filteredRequests.map((req, index) => ({
       No: index + 1,
-      Nov: toTypeLabel(req.type),
-      'Ad Soyad': req.fullName || '',
-      Email: req.email || '',
-      Telefon: req.phone || '',
-      Kurs: req.courseId ? getCourseTitle(String(req.courseId || '')) : '',
-      Movzu: req.subject || '',
-      Mesaj: req.message || '',
+      'Müraciət Növü': toTypeLabel(req.type),
+      'Ad Soyad': req.fullName || 'Adsız',
+      'E-poçt': req.email || '',
+      GSM: req.phone || '',
+      'Mövzu / Kurs': req.type === 'course' ? getCourseTitle(String(req.courseId || '')) : req.subject || '',
+      'Mesaj (Qısa)': shortText(req.message),
       Status: toStatusLabel(req.status || ''),
-      Tarix: req.timestamp || '',
+      'Müraciət Tarixi': req.timestamp || '',
     }));
 
     const worksheet = XLSX.utils.aoa_to_sheet([
-      ['AUDIT.TV - MURACIETLER HESABATI'],
-      [`Tarix: ${reportDate.toLocaleDateString('az-AZ')} ${reportDate.toLocaleTimeString('az-AZ')}`],
-      [`Toplam qeyd: ${rows.length}`],
+      ['audit.tv | Müraciətlər Hesabatı'],
+      [`Hesabat tarixi: ${reportDate.toLocaleDateString('az-AZ')} ${reportDate.toLocaleTimeString('az-AZ')}`],
+      [`Qeyd sayı: ${rows.length}`],
       [],
     ]);
     XLSX.utils.sheet_add_json(worksheet, rows, { origin: 'A5', skipHeader: false });
 
-    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
-    worksheet['!autofilter'] = { ref: `A5:J${Math.max(rows.length + 5, 6)}` };
+    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }];
+    worksheet['!autofilter'] = { ref: `A5:I${Math.max(rows.length + 5, 6)}` };
     worksheet['!cols'] = [
-      { wch: 6 },
-      { wch: 12 },
-      { wch: 24 },
-      { wch: 28 },
-      { wch: 18 },
-      { wch: 30 },
-      { wch: 30 },
-      { wch: 48 },
-      { wch: 14 },
-      { wch: 24 },
+      { wch: 6 },  // No
+      { wch: 14 }, // Müraciət Növü
+      { wch: 24 }, // Ad Soyad
+      { wch: 30 }, // E-poçt
+      { wch: 18 }, // GSM
+      { wch: 34 }, // Mövzu / Kurs
+      { wch: 52 }, // Mesaj (Qısa)
+      { wch: 16 }, // Status
+      { wch: 24 }, // Müraciət Tarixi
     ];
 
     const workbook = XLSX.utils.book_new();
     workbook.Props = {
-      Title: 'AUDIT.TV Muracietler Hesabati',
-      Subject: 'Muracietlerin export fayli',
-      Author: 'AUDIT.TV Admin Panel',
-      Company: 'AUDIT.TV',
+      Title: 'audit.tv Müraciətlər Hesabatı',
+      Subject: 'Müraciətlərin Excel ixracı',
+      Author: 'audit.tv Admin Panel',
+      Company: 'audit.tv',
       CreatedDate: reportDate,
     };
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Muracietler');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Muraciatlar');
     XLSX.writeFile(workbook, `muracietler-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
