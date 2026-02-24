@@ -33,26 +33,27 @@ const BlogPostDetail: React.FC = () => {
   // Cast for compatibility with blocks
   const post = BLOG_POSTS.find(p => p.id === id) as unknown as BlogPost;
   const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const encodedUrl = encodeURIComponent(pageUrl);
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const sharePageUrl = post ? `${origin}/api/share/blog/${encodeURIComponent(post.id)}` : pageUrl;
   const encodedTitle = encodeURIComponent(post?.title || '');
   const shareTargets = [
     {
       key: 'facebook',
-      href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sharePageUrl)}`,
       label: 'Facebook-da paylaş',
       icon: <Facebook size={18} />,
       className: 'hover:bg-[#1877F2] hover:text-white',
     },
     {
       key: 'x',
-      href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
+      href: `https://twitter.com/intent/tweet?url=${encodeURIComponent(sharePageUrl)}&text=${encodedTitle}`,
       label: 'X-də paylaş',
       icon: <span className="text-sm font-black leading-none">X</span>,
       className: 'hover:bg-slate-900 hover:text-white',
     },
     {
       key: 'whatsapp',
-      href: `https://wa.me/?text=${encodeURIComponent(`${post?.title || ''} ${pageUrl}`.trim())}`,
+      href: `https://wa.me/?text=${encodeURIComponent(`${post?.title || ''} ${sharePageUrl}`.trim())}`,
       label: 'WhatsApp-da paylaş',
       icon: <MessageCircle size={18} />,
       className: 'hover:bg-[#25D366] hover:text-white',

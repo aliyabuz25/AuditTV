@@ -264,6 +264,15 @@ function asText(value) {
   return String(value || '').trim();
 }
 
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function buildAbsoluteUrl(req, relativeUrl) {
   if (PUBLIC_BASE_URL) {
     return `${PUBLIC_BASE_URL}${relativeUrl}`;
@@ -595,6 +604,59 @@ app.post('/api/upload', uploadAny.single('file'), (req, res) => {
     mimetype: req.file.mimetype,
     size: req.file.size,
   });
+});
+
+app.get('/api/share/blog/:id', (req, res) => {
+  const postId = String(req.params.id || '');
+  const { sitemap } = getStoredSitemap();
+  const posts = Array.isArray(sitemap?.blog?.posts) ? sitemap.blog.posts : [];
+  const post = posts.find((p) => String(p.id) === postId);
+
+  if (!post) {
+    res.status(404).send('Blog post not found');
+    return;
+  }
+
+  const siteName = asText(sitemap?.settings?.branding?.siteName) || 'audit.tv';
+  const pageTitle = asText(post.title) || 'Blog';
+  const fallbackDesc = asText(post.excerpt);
+  const paragraphBlock = Array.isArray(post.blocks)
+    ? post.blocks.find((b) => String(b.type) === 'paragraph' && asText(b.content))
+    : null;
+  const blockDesc = asText(paragraphBlock?.content).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const description = (blockDesc || fallbackDesc || `${siteName} blog yazısı`).slice(0, 300);
+  const imageUrlRaw = asText(post.imageUrl);
+  const imageUrl = /^https?:\/\//i.test(imageUrlRaw) ? imageUrlRaw : buildAbsoluteUrl(req, imageUrlRaw || '/uploads/default-blog.jpg');
+  const frontendUrl = PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL}/#/blog/${encodeURIComponent(postId)}` : buildAbsoluteUrl(req, `/#/blog/${encodeURIComponent(postId)}`);
+  const shareUrl = buildAbsoluteUrl(req, `/api/share/blog/${encodeURIComponent(postId)}`);
+
+  const html = `<!doctype html>
+<html lang="az">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(pageTitle)} | ${escapeHtml(siteName)}</title>
+    <meta name="description" content="${escapeHtml(description)}" />
+    <link rel="canonical" href="${escapeHtml(frontendUrl)}" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="${escapeHtml(siteName)}" />
+    <meta property="og:title" content="${escapeHtml(pageTitle)}" />
+    <meta property="og:description" content="${escapeHtml(description)}" />
+    <meta property="og:image" content="${escapeHtml(imageUrl)}" />
+    <meta property="og:url" content="${escapeHtml(shareUrl)}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
+    <meta name="twitter:description" content="${escapeHtml(description)}" />
+    <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
+    <meta http-equiv="refresh" content="0; url=${escapeHtml(frontendUrl)}" />
+  </head>
+  <body>
+    <script>window.location.replace(${JSON.stringify(frontendUrl)});</script>
+  </body>
+</html>`;
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
 });
 
 app.get('/api/uploads/pdfs', requireAdmin, (req, res) => {
