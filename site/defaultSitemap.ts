@@ -399,9 +399,9 @@ export const defaultSitemap: Sitemap = {
       },
       copyrightText: 'audit.tv. All rights reserved.',
       privacyLabel: 'Məxfilik Siyasəti',
-      privacyUrl: '#',
+      privacyUrl: '/mexfilik-siyaseti',
       termsLabel: 'İstifadə Şərtləri',
-      termsUrl: '#',
+      termsUrl: '/istifade-sertleri',
     },
   },
 };

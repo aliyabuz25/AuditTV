@@ -11,6 +11,8 @@ import BlogPostDetail from './pages/BlogPostDetail';
 import PodcastPage from './pages/Podcast';
 import CourseDetail from './pages/CourseDetail';
 import CoursePlayer from './pages/CoursePlayer';
+import PrivacyPolicyPage from './pages/PrivacyPolicy';
+import TermsOfUsePage from './pages/TermsOfUse';
 
 // Admin Imports
 import AdminLogin from './pages/admin/AdminLogin';
@@ -70,6 +72,8 @@ const App: React.FC = () => {
             <Route path="/blog" element={<Layout><BlogPage /></Layout>} />
             <Route path="/blog/:id" element={<Layout><BlogPostDetail /></Layout>} />
             <Route path="/elaqe" element={<Layout><ContactPage /></Layout>} />
+            <Route path="/mexfilik-siyaseti" element={<Layout><PrivacyPolicyPage /></Layout>} />
+            <Route path="/istifade-sertleri" element={<Layout><TermsOfUsePage /></Layout>} />
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLogin />} />

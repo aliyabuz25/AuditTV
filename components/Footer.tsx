@@ -3,11 +3,26 @@ import { NavLink, Link } from 'react-router-dom';
 import { Linkedin, Facebook, Twitter, Mail } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 
+const isInternalPath = (value: string) => value.startsWith('/') && !value.startsWith('//');
+
+const FooterLegalLink: React.FC<{ href: string; label: string }> = ({ href, label }) => {
+  if (isInternalPath(href)) {
+    return <Link to={href} className="hover:text-white transition-colors">{label}</Link>;
+  }
+  return (
+    <a href={href || '#'} className="hover:text-white transition-colors" target="_blank" rel="noreferrer">
+      {label}
+    </a>
+  );
+};
+
 const Footer: React.FC = () => {
   const { sitemap } = useSiteData();
   const siteName = sitemap.settings?.branding?.siteName || 'audit.tv';
   const logoUrl = sitemap.settings?.branding?.logoUrl || '';
   const footer = sitemap.settings?.footer;
+  const privacyUrl = footer.privacyUrl && footer.privacyUrl !== '#' ? footer.privacyUrl : '/mexfilik-siyaseti';
+  const termsUrl = footer.termsUrl && footer.termsUrl !== '#' ? footer.termsUrl : '/istifade-sertleri';
 
   return (
     <footer className="bg-neutral-950 border-t border-white/10 pt-20 pb-10 text-sm">
@@ -70,8 +85,8 @@ const Footer: React.FC = () => {
         <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-neutral-600">
           <p>&copy; {new Date().getFullYear()} {footer.copyrightText}</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-             <a href={footer.privacyUrl || '#'} className="hover:text-white transition-colors">{footer.privacyLabel}</a>
-             <a href={footer.termsUrl || '#'} className="hover:text-white transition-colors">{footer.termsLabel}</a>
+             <FooterLegalLink href={privacyUrl} label={footer.privacyLabel} />
+             <FooterLegalLink href={termsUrl} label={footer.termsLabel} />
           </div>
         </div>
       </div>
