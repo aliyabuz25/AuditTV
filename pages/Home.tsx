@@ -24,7 +24,8 @@ const Home: React.FC = () => {
 
   const handleNewsletterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const email = String(formData.get('email') || '').trim();
     if (!email) {
       toast.error('E-poçt ünvanını daxil edin.');
@@ -47,7 +48,7 @@ const Home: React.FC = () => {
       }
 
       toast.success('Abunəliyiniz qeydə alındı. Yenilikləri e-poçtla göndərəcəyik.');
-      e.currentTarget.reset();
+      form.reset();
     } catch {
       toast.error('Abunəlik zamanı xəta baş verdi. Yenidən cəhd edin.');
     }

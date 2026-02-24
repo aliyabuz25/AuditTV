@@ -13,7 +13,8 @@ const ContactPage: React.FC = () => {
 
   const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const fullName = String(formData.get('fullName') || '').trim();
     const email = String(formData.get('email') || '').trim();
     const subject = String(formData.get('subject') || '').trim();
@@ -42,7 +43,7 @@ const ContactPage: React.FC = () => {
       }
 
       toast.success('Mesajınız uğurla göndərildi. Tezliklə sizinlə əlaqə saxlayacağıq.');
-      e.currentTarget.reset();
+      form.reset();
     } catch {
       toast.error('Mesaj göndərilərkən xəta baş verdi. Yenidən cəhd edin.');
     }
