@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check, X, Search, BookOpen, Mail, MessageSquare, ListChecks, Download, CircleOff } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { useSiteData } from '../../site/SiteDataContext';
 
 type RequestType = 'course' | 'contact' | 'newsletter';
@@ -99,35 +100,34 @@ const CourseRequestsManager: React.FC = () => {
     [requests, searchTerm],
   );
 
-  const toCsvCell = (value: string) => `"${value.replace(/"/g, '""')}"`;
-
   const handleExportExcel = () => {
-    const headers = ['Nov', 'Ad Soyad', 'Email', 'Telefon', 'Kurs', 'Movzu', 'Mesaj', 'Status', 'Tarix'];
-    const rows = filteredRequests.map((req) => [
-      req.type,
-      req.fullName || '',
-      req.email || '',
-      req.phone || '',
-      req.courseId ? getCourseTitle(String(req.courseId || '')) : '',
-      req.subject || '',
-      req.message || '',
-      req.status || '',
-      req.timestamp || '',
-    ]);
+    const rows = filteredRequests.map((req) => ({
+      Nov: req.type,
+      'Ad Soyad': req.fullName || '',
+      Email: req.email || '',
+      Telefon: req.phone || '',
+      Kurs: req.courseId ? getCourseTitle(String(req.courseId || '')) : '',
+      Movzu: req.subject || '',
+      Mesaj: req.message || '',
+      Status: req.status || '',
+      Tarix: req.timestamp || '',
+    }));
 
-    const csvContent = [headers, ...rows]
-      .map((row) => row.map((cell) => toCsvCell(String(cell))).join(','))
-      .join('\n');
-
-    const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `muracietler-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    worksheet['!cols'] = [
+      { wch: 12 },
+      { wch: 24 },
+      { wch: 28 },
+      { wch: 18 },
+      { wch: 28 },
+      { wch: 28 },
+      { wch: 48 },
+      { wch: 14 },
+      { wch: 24 },
+    ];
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Muracietler');
+    XLSX.writeFile(workbook, `muracietler-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   return (
