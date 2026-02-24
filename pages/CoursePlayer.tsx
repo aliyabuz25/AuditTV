@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Play, CheckCircle, ChevronLeft, MessageSquare, Download, Trophy, List, ExternalLink } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
+import CsPlayerEmbed from '../components/CsPlayerEmbed';
 
 const CoursePlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -115,9 +116,9 @@ const CoursePlayer: React.FC = () => {
     localStorage.setItem(lastLessonStorageKey, activeLesson.id);
   }, [isAuthorized, lastLessonStorageKey, activeLesson]);
 
-  if (isAuthorized === null) return <div className="bg-slate-900 h-screen flex items-center justify-center text-white font-black">Yoxlanılır...</div>;
+  if (isAuthorized === null) return <div className="bg-slate-50 h-screen flex items-center justify-center text-slate-700 font-black">Yoxlanılır...</div>;
   if (!isAuthorized) return null;
-  if (!course) return <div>Kurs tapılmadı.</div>;
+  if (!course) return <div className="bg-slate-50 min-h-screen flex items-center justify-center text-slate-700 font-bold">Kurs tapılmadı.</div>;
 
   const toggleComplete = (lessonId: string) => {
     if (!lessonId) return;
@@ -129,153 +130,139 @@ const CoursePlayer: React.FC = () => {
   const progressPercent = totalLessons > 0 ? Math.round((completedLessons.length / totalLessons) * 100) : 0;
 
   return (
-    <div className="bg-slate-900 min-h-screen pt-20 flex flex-col lg:flex-row overflow-hidden h-screen">
-      
+    <div className="bg-slate-50 min-h-screen lg:h-screen flex flex-col lg:flex-row">
       {/* Video Content Area */}
       <div className="flex-1 flex flex-col overflow-y-auto">
-         <div className="bg-black aspect-video w-full relative">
-            {activeLesson?.videoUrl ? (
-              <video
-                key={activeLesson.id}
-                className="w-full h-full"
-                controls
-                autoPlay
-                src={activeLesson.videoUrl}
-                onEnded={() => toggleComplete(activeLesson.id)}
-              />
+        <div className="bg-slate-950 aspect-video w-full relative overflow-hidden">
+          <CsPlayerEmbed
+            videoUrl={activeLesson?.videoUrl}
+            autoplay={true}
+            onEnded={() => {
+              if (activeLesson?.id) toggleComplete(activeLesson.id);
+            }}
+            className="w-full h-full"
+            emptyMessage="Bu dərs üçün video tapılmadı."
+          />
+          <div className="absolute top-4 left-4 flex items-center gap-3">
+            <Link to={`/tedris/${course.id}`} className="p-2 bg-white/10 backdrop-blur-md rounded-lg text-white hover:bg-white/20 transition-all">
+              <ChevronLeft size={20} />
+            </Link>
+            <span className="text-white text-sm font-black bg-white/10 px-4 py-2 rounded-lg backdrop-blur-md">{activeLesson?.title}</span>
+          </div>
+        </div>
+
+        <div className="p-6 md:p-8 bg-slate-50 flex-1">
+          <div className="flex flex-col md:flex-row justify-between md:items-start gap-4 mb-10">
+            <div>
+              <h1 className="text-3xl font-black text-slate-900 mb-4">{activeLesson?.title}</h1>
+              <div className="flex items-center gap-4 text-slate-600 text-sm font-bold">
+                <span className="bg-white border border-slate-200 px-3 py-1 rounded-lg">Dərs Müddəti: {activeLesson?.duration}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => toggleComplete(activeLesson?.id || '')}
+              className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${
+                activeLesson?.id && completedLessons.includes(activeLesson.id)
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+              }`}
+              disabled={!activeLesson}
+            >
+              <CheckCircle size={18} /> {activeLesson?.id && completedLessons.includes(activeLesson.id) ? 'Tamamlandı' : 'Tamamlandı kimi qeyd et'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-14">
+            <button className="flex flex-col items-center gap-3 p-6 bg-white rounded-2xl hover:bg-slate-50 transition-all border border-slate-200">
+              <MessageSquare className="text-primary-500" />
+              <span className="text-xs font-black text-slate-700 uppercase tracking-widest">Sual-Cavab</span>
+            </button>
+            <button
+              className="flex flex-col items-center gap-3 p-6 bg-white rounded-2xl hover:bg-slate-50 transition-all border border-slate-200"
+              onClick={() => {
+                const resourceBox = document.getElementById('course-player-resources');
+                if (resourceBox) resourceBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              <Download className="text-amber-500" />
+              <span className="text-xs font-black text-slate-700 uppercase tracking-widest">Resurslar ({courseResources.length})</span>
+            </button>
+            <button className="flex flex-col items-center gap-3 p-6 bg-white rounded-2xl hover:bg-slate-50 transition-all border border-slate-200">
+              <Trophy className="text-emerald-500" />
+              <span className="text-xs font-black text-slate-700 uppercase tracking-widest">Sertifikat</span>
+            </button>
+          </div>
+
+          <section id="course-player-resources" className="rounded-3xl border border-slate-200 bg-white p-6 mb-14">
+            <h2 className="text-slate-800 font-black text-sm uppercase tracking-widest mb-5 flex items-center gap-2">
+              <Download size={16} className="text-amber-500" /> Kurs Resursları
+            </h2>
+
+            {courseResources.length === 0 ? (
+              <p className="text-slate-500 text-sm font-medium">Bu kurs üçün hələ resurs əlavə edilməyib.</p>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">
-                Bu dərs üçün video tapılmadı.
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {courseResources.map((resource) => (
+                  <a
+                    key={resource.id}
+                    href={resource.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all"
+                  >
+                    <span className="text-sm font-bold pr-3 break-words [overflow-wrap:anywhere]">{resource.title}</span>
+                    <ExternalLink size={16} className="text-amber-500 shrink-0" />
+                  </a>
+                ))}
               </div>
             )}
-            <div className="absolute top-4 left-4 flex items-center gap-3">
-               <Link to={`/tedris/${course.id}`} className="p-2 bg-white/10 backdrop-blur-md rounded-lg text-white hover:bg-white/20 transition-all">
-                  <ChevronLeft size={20} />
-               </Link>
-               <span className="text-white text-sm font-black bg-white/10 px-4 py-2 rounded-lg backdrop-blur-md">{activeLesson?.title}</span>
-            </div>
-         </div>
-
-         <div className="p-8 bg-slate-900 flex-1">
-            <div className="flex justify-between items-start mb-10">
-               <div>
-                  <h1 className="text-3xl font-black text-white mb-4">{activeLesson?.title}</h1>
-                  <div className="flex items-center gap-4 text-slate-400 text-sm font-bold">
-                     <span className="bg-white/10 px-3 py-1 rounded-lg">Dərs Müddəti: {activeLesson?.duration}</span>
-                  </div>
-               </div>
-               <button 
-                 onClick={() => toggleComplete(activeLesson?.id || '')}
-                 className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${
-                   activeLesson?.id && completedLessons.includes(activeLesson.id) 
-                   ? 'bg-emerald-600 text-white' 
-                   : 'bg-white/10 text-white hover:bg-white/20'
-                 }`}
-                 disabled={!activeLesson}
-               >
-                  <CheckCircle size={18} /> {activeLesson?.id && completedLessons.includes(activeLesson.id) ? 'Tamamlandı' : 'Tamamlandı kimi qeyd et'}
-               </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-               <button className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5">
-                  <MessageSquare className="text-primary-400" />
-                  <span className="text-xs font-black text-white uppercase tracking-widest">Sual-Cavab</span>
-               </button>
-               <button
-                 className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5"
-                 onClick={() => {
-                   const resourceBox = document.getElementById('course-player-resources');
-                   if (resourceBox) resourceBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                 }}
-               >
-                  <Download className="text-amber-400" />
-                  <span className="text-xs font-black text-white uppercase tracking-widest">Resurslar ({courseResources.length})</span>
-               </button>
-               <button className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5">
-                  <Trophy className="text-emerald-400" />
-                  <span className="text-xs font-black text-white uppercase tracking-widest">Sertifikat</span>
-               </button>
-            </div>
-
-            <section id="course-player-resources" className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 mb-20">
-               <h2 className="text-white font-black text-sm uppercase tracking-widest mb-5 flex items-center gap-2">
-                  <Download size={16} className="text-amber-400" /> Kurs Resursları
-               </h2>
-
-               {courseResources.length === 0 ? (
-                 <p className="text-slate-400 text-sm font-medium">Bu kurs üçün hələ resurs əlavə edilməyib.</p>
-               ) : (
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                   {courseResources.map((resource) => (
-                     <a
-                       key={resource.id}
-                       href={resource.url}
-                       target="_blank"
-                       rel="noreferrer"
-                       className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-200 hover:bg-white/10 hover:border-white/20 transition-all"
-                     >
-                       <span className="text-sm font-bold pr-3 break-words [overflow-wrap:anywhere]">{resource.title}</span>
-                       <ExternalLink size={16} className="text-amber-400 shrink-0" />
-                     </a>
-                   ))}
-                 </div>
-               )}
-            </section>
-         </div>
+          </section>
+        </div>
       </div>
 
       {/* Playlist Sidebar */}
-      <div className="w-full lg:w-96 bg-slate-800 border-l border-white/10 flex flex-col h-full overflow-hidden">
-         <div className="p-6 border-b border-white/10 bg-slate-900/50">
-            <h3 className="text-white font-black flex items-center gap-2 mb-2 uppercase tracking-widest text-sm">
-               <List size={18} className="text-primary-500" /> Kursun Məzmunu
-            </h3>
-            <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden mt-6">
-               <div 
-                 className="bg-primary-600 h-full transition-all duration-500" 
-                 style={{ width: `${progressPercent}%` }}
-               />
-            </div>
-            <p className="text-[10px] font-black text-slate-400 mt-3 uppercase tracking-widest text-right">
-               Progress: {progressPercent}%
-            </p>
-         </div>
+      <div className="w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col lg:h-full overflow-hidden">
+        <div className="p-6 border-b border-slate-200 bg-slate-50">
+          <h3 className="text-slate-800 font-black flex items-center gap-2 mb-2 uppercase tracking-widest text-sm">
+            <List size={18} className="text-primary-500" /> Kursun Məzmunu
+          </h3>
+          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden mt-6">
+            <div className="bg-primary-600 h-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+          </div>
+          <p className="text-[10px] font-black text-slate-500 mt-3 uppercase tracking-widest text-right">Progress: {progressPercent}%</p>
+        </div>
 
-         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
-            {totalLessons === 0 ? (
-               <div className="p-6 rounded-2xl bg-white/5 text-slate-300 text-sm font-medium">
-                  Bu kurs üçün hələ dərs əlavə edilməyib.
-               </div>
-            ) : course.modules.map((module) => (
-               <div key={module.id}>
-                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-2">{module.title}</h4>
-                  <div className="space-y-1">
-                     {module.lessons.map((lesson) => (
-                        <button 
-                           key={lesson.id}
-                           onClick={() => setActiveLessonId(lesson.id)}
-                           className={`w-full flex items-center justify-between p-4 rounded-xl transition-all text-left ${
-                             activeLesson?.id === lesson.id 
-                             ? 'bg-primary-600 text-white' 
-                             : 'hover:bg-white/5 text-slate-300'
-                           }`}
-                        >
-                           <div className="flex items-center gap-3">
-                              <div className={`p-1 rounded ${activeLesson?.id === lesson.id ? 'bg-white/20' : 'bg-white/5'}`}>
-                                 {completedLessons.includes(lesson.id) ? <CheckCircle size={14} className="text-emerald-400" /> : <Play size={14} />}
-                              </div>
-                              <span className="text-xs font-bold leading-tight">{lesson.title}</span>
-                           </div>
-                           <span className="text-[10px] font-medium opacity-60 ml-4 flex-shrink-0">{lesson.duration}</span>
-                        </button>
-                     ))}
-                  </div>
-               </div>
-            ))}
-         </div>
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
+          {totalLessons === 0 ? (
+            <div className="p-6 rounded-2xl bg-slate-100 text-slate-600 text-sm font-medium">Bu kurs üçün hələ dərs əlavə edilməyib.</div>
+          ) : (
+            course.modules.map((module) => (
+              <div key={module.id}>
+                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-2">{module.title}</h4>
+                <div className="space-y-1">
+                  {module.lessons.map((lesson) => (
+                    <button
+                      key={lesson.id}
+                      onClick={() => setActiveLessonId(lesson.id)}
+                      className={`w-full flex items-center justify-between p-4 rounded-xl transition-all text-left ${
+                        activeLesson?.id === lesson.id ? 'bg-primary-600 text-white shadow-sm' : 'hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`p-1 rounded ${activeLesson?.id === lesson.id ? 'bg-white/20' : 'bg-slate-200'}`}>
+                          {completedLessons.includes(lesson.id) ? <CheckCircle size={14} className="text-emerald-500" /> : <Play size={14} />}
+                        </div>
+                        <span className="text-xs font-bold leading-tight">{lesson.title}</span>
+                      </div>
+                      <span className="text-[10px] font-medium opacity-70 ml-4 flex-shrink-0">{lesson.duration}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
-
     </div>
   );
 };

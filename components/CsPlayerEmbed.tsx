@@ -1,36 +1,56 @@
 import React from 'react';
 
 type CsPlayerEmbedProps = {
-  videoId: string;
+  videoId?: string | null;
+  videoUrl?: string;
   autoplay?: boolean;
+  className?: string;
+  emptyMessage?: string;
+  onEnded?: () => void;
 };
 
-const CsPlayerEmbed: React.FC<CsPlayerEmbedProps> = ({ videoId, autoplay = false }) => {
-  if (!videoId) {
+const CsPlayerEmbed: React.FC<CsPlayerEmbedProps> = ({
+  videoId,
+  videoUrl,
+  autoplay = false,
+  className = 'w-full aspect-video',
+  emptyMessage = 'Video tapilmadi.',
+  onEnded,
+}) => {
+  const resolvedVideoUrl = String(videoUrl || '').trim();
+  const resolvedVideoId = videoId || getYouTubeVideoId(resolvedVideoUrl);
+
+  if (resolvedVideoId) {
+    const params = new URLSearchParams({
+      autoplay: autoplay ? '1' : '0',
+      rel: '0',
+      modestbranding: '1',
+      playsinline: '1',
+    });
+
     return (
-      <div className="w-full aspect-video bg-slate-900 rounded-2xl flex items-center justify-center text-slate-300 text-sm font-bold">
-        Video ID tapilmadi.
-      </div>
+      <iframe
+        className={className}
+        src={`https://www.youtube.com/embed/${resolvedVideoId}?${params.toString()}`}
+        title="Video player"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+      />
     );
   }
 
-  const params = new URLSearchParams({
-    autoplay: autoplay ? '1' : '0',
-    rel: '0',
-    modestbranding: '1',
-    playsinline: '1',
-  });
+  if (resolvedVideoUrl) {
+    return (
+      <video className={className} controls autoPlay={autoplay} playsInline src={resolvedVideoUrl} preload="metadata" onEnded={onEnded} />
+    );
+  }
 
   return (
-    <iframe
-      className="w-full aspect-video"
-      src={`https://www.youtube.com/embed/${videoId}?${params.toString()}`}
-      title="Podcast video player"
-      loading="lazy"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      referrerPolicy="strict-origin-when-cross-origin"
-      allowFullScreen
-    />
+    <div className={`${className} bg-slate-900 flex items-center justify-center text-slate-300 text-sm font-bold`}>
+      {emptyMessage}
+    </div>
   );
 };
 
