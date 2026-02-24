@@ -140,7 +140,7 @@ const CoursePlayer: React.FC = () => {
             onEnded={() => {
               if (activeLesson?.id) toggleComplete(activeLesson.id);
             }}
-            className="w-full h-full"
+            className="w-full h-full [&_.csPlayer]:h-full [&_.csPlayer]:rounded-none [&_.csPlayer]:min-w-0"
             emptyMessage="Bu dərs üçün video tapılmadı."
           />
           <div className="absolute top-4 left-4 flex items-center gap-3">
