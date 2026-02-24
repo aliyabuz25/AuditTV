@@ -623,6 +623,10 @@ function resolveEmailAssetUrl(rawValue) {
   return PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL}/${raw.replace(/^\/+/, '')}` : raw;
 }
 
+function formatEmailFieldValue(value) {
+  return escapeHtml(value).replace(/\r?\n/g, '<br />');
+}
+
 function createBrandedEmailHtml({
   sitemap,
   badge,
@@ -636,8 +640,20 @@ function createBrandedEmailHtml({
     .map(
       ([label, value]) => `
         <tr>
-          <td style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#475569;font-weight:700;width:170px">${escapeHtml(label)}</td>
-          <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#0f172a;font-weight:500;word-break:break-word">${escapeHtml(value)}</td>
+          <td style="padding:0 0 10px 0">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;border-collapse:separate;border-spacing:0;background:#ffffff">
+              <tr>
+                <td style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">
+                  ${escapeHtml(label)}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:12px;color:#0f172a;font-weight:500;font-size:14px;line-height:1.6;word-break:break-word;overflow-wrap:anywhere">
+                  ${formatEmailFieldValue(value)}
+                </td>
+              </tr>
+            </table>
+          </td>
         </tr>
       `,
     )
@@ -671,7 +687,7 @@ function createBrandedEmailHtml({
             </tr>
             <tr>
               <td style="padding:20px 24px 12px 24px">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;border-collapse:separate;border-spacing:0">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0">
                   ${rowsHtml}
                 </table>
               </td>
