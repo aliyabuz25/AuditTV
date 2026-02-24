@@ -164,6 +164,7 @@ export type Sitemap = {
       secure: boolean;
       fromEmail: string;
       fromName: string;
+      notifyEmails: string;
     };
     branding: {
       logoUrl: string;
@@ -371,6 +372,7 @@ export const defaultSitemap: Sitemap = {
       secure: false,
       fromEmail: 'no-reply@audit.tv',
       fromName: 'audit.tv',
+      notifyEmails: 'info@audit.tv',
     },
     branding: {
       logoUrl: '',

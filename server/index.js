@@ -510,7 +510,14 @@ function formatSubmissionType(type) {
 function getSubmissionRecipient(sitemap) {
   const settings = sitemap?.settings || {};
   const smtp = settings.smtp || {};
-  return asText(smtp.notifyEmail || settings.footer?.email || sitemap?.contact?.email);
+  const rawList = asText(smtp.notifyEmails || smtp.notifyEmail);
+  const list = rawList
+    .split(/[,\n;]/)
+    .map((entry) => asText(entry))
+    .filter(Boolean);
+  if (list.length > 0) return list;
+  const fallback = asText(settings.footer?.email || sitemap?.contact?.email);
+  return fallback ? [fallback] : [];
 }
 
 function getSmtpSettings(sitemap) {
@@ -523,6 +530,7 @@ function getSmtpSettings(sitemap) {
     secure: Boolean(smtp.secure),
     fromEmail: asText(smtp.fromEmail),
     fromName: asText(smtp.fromName),
+    notifyEmails: asText(smtp.notifyEmails || smtp.notifyEmail),
   };
 }
 
@@ -560,7 +568,7 @@ async function sendSubmissionEmail(submission) {
   const { sitemap } = getStoredSitemap();
   const smtp = getSmtpSettings(sitemap);
   const to = getSubmissionRecipient(sitemap);
-  if (!smtp.host || !smtp.port || !smtp.username || !smtp.password || !smtp.fromEmail || !to) {
+  if (!smtp.host || !smtp.port || !smtp.username || !smtp.password || !smtp.fromEmail || to.length === 0) {
     return { sent: false, reason: 'smtp_not_configured' };
   }
 
