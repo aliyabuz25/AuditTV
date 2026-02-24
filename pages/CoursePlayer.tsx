@@ -1,7 +1,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Play, CheckCircle, ChevronLeft, MessageSquare, Download, Trophy, List } from 'lucide-react';
+import { Play, CheckCircle, ChevronLeft, MessageSquare, Download, Trophy, List, ExternalLink } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 
 const CoursePlayer: React.FC = () => {
@@ -19,6 +19,17 @@ const CoursePlayer: React.FC = () => {
   const allLessons = useMemo(() => course?.modules.flatMap((m) => m.lessons) || [], [course]);
   const lessonIds = useMemo(() => new Set(allLessons.map((lesson) => lesson.id)), [allLessons]);
   const totalLessons = allLessons.length;
+  const courseResources = useMemo(
+    () =>
+      (course?.resources || [])
+        .map((resource, index) => ({
+          id: String(resource?.id || index + 1),
+          title: String(resource?.title || `Resurs ${index + 1}`),
+          url: String(resource?.url || '').trim(),
+        }))
+        .filter((resource) => resource.url),
+    [course?.resources],
+  );
 
   const progressStorageKey =
     userEmail && id ? `audit_course_progress_${userEmail}_${id}` : '';
@@ -171,15 +182,46 @@ const CoursePlayer: React.FC = () => {
                   <MessageSquare className="text-primary-400" />
                   <span className="text-xs font-black text-white uppercase tracking-widest">Sual-Cavab</span>
                </button>
-               <button className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5">
+               <button
+                 className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5"
+                 onClick={() => {
+                   const resourceBox = document.getElementById('course-player-resources');
+                   if (resourceBox) resourceBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                 }}
+               >
                   <Download className="text-amber-400" />
-                  <span className="text-xs font-black text-white uppercase tracking-widest">Resurslar</span>
+                  <span className="text-xs font-black text-white uppercase tracking-widest">Resurslar ({courseResources.length})</span>
                </button>
                <button className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-2xl hover:bg-white/10 transition-all border border-white/5">
                   <Trophy className="text-emerald-400" />
                   <span className="text-xs font-black text-white uppercase tracking-widest">Sertifikat</span>
                </button>
             </div>
+
+            <section id="course-player-resources" className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 mb-20">
+               <h2 className="text-white font-black text-sm uppercase tracking-widest mb-5 flex items-center gap-2">
+                  <Download size={16} className="text-amber-400" /> Kurs Resursları
+               </h2>
+
+               {courseResources.length === 0 ? (
+                 <p className="text-slate-400 text-sm font-medium">Bu kurs üçün hələ resurs əlavə edilməyib.</p>
+               ) : (
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                   {courseResources.map((resource) => (
+                     <a
+                       key={resource.id}
+                       href={resource.url}
+                       target="_blank"
+                       rel="noreferrer"
+                       className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-200 hover:bg-white/10 hover:border-white/20 transition-all"
+                     >
+                       <span className="text-sm font-bold pr-3 break-words [overflow-wrap:anywhere]">{resource.title}</span>
+                       <ExternalLink size={16} className="text-amber-400 shrink-0" />
+                     </a>
+                   ))}
+                 </div>
+               )}
+            </section>
          </div>
       </div>
 

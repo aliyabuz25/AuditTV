@@ -6,7 +6,7 @@ import {
   Users, ChevronDown, ChevronUp, Play, ListPlus, 
   Target, Info, ArrowLeft, Search, GraduationCap
 } from 'lucide-react';
-import { Course, CourseModule, CoursePerk, Lesson } from '../../types';
+import { Course, CourseModule, CoursePerk, CourseResource, Lesson } from '../../types';
 import { useSiteData } from '../../site/SiteDataContext';
 
 const PERK_ICON_OPTIONS: CoursePerk['iconName'][] = ['CheckCircle', 'Shield', 'Users', 'BookOpen', 'Star', 'Clock'];
@@ -26,6 +26,15 @@ const normalizePerks = (perks: Course['perks'] | undefined): CoursePerk[] => {
     { text: 'Mentor Dəstəyi', iconName: 'Users' },
   ];
 };
+
+const normalizeResources = (resources: Course['resources'] | undefined): CourseResource[] =>
+  (resources || [])
+    .map((resource, index) => ({
+      id: String(resource?.id || `${Date.now()}-${index}`),
+      title: String(resource?.title || ''),
+      url: String(resource?.url || ''),
+    }))
+    .filter((resource) => resource.title || resource.url);
 
 const EducationManager: React.FC = () => {
   const { sitemap, saveSection } = useSiteData();
@@ -55,7 +64,11 @@ const EducationManager: React.FC = () => {
 
   const openEditModal = (course: Course | null = null) => {
     if (course) {
-      setEditingCourse({ ...course, perks: normalizePerks(course.perks) });
+      setEditingCourse({
+        ...course,
+        perks: normalizePerks(course.perks),
+        resources: normalizeResources(course.resources),
+      });
     } else {
       setEditingCourse({
         id: Date.now().toString(),
@@ -71,6 +84,7 @@ const EducationManager: React.FC = () => {
         learningOutcomes: [],
         requirements: [],
         perks: normalizePerks([]),
+        resources: [],
         studentCount: 0,
         modules: [],
       });
@@ -119,6 +133,12 @@ const EducationManager: React.FC = () => {
       ...editingCourse,
       modules: editingCourse.modules.map(m => m.id === moduleId ? { ...m, lessons: [...m.lessons, newLesson] } : m)
     });
+  };
+
+  const addResource = () => {
+    if (!editingCourse) return;
+    const next = [...normalizeResources(editingCourse.resources), { id: Math.random().toString(36).slice(2, 11), title: '', url: '' }];
+    setEditingCourse({ ...editingCourse, resources: next });
   };
 
   return (
@@ -411,6 +431,71 @@ const EducationManager: React.FC = () => {
                                </div>
                              </div>
                            ))}
+                        </div>
+                     </section>
+
+                     {/* C.3 COURSE RESOURCES */}
+                     <section className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                        <div className="flex justify-between items-center mb-8">
+                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                              <BookOpen size={14} className="text-amber-600" /> Kurs Resursları
+                           </h4>
+                           <button
+                             onClick={addResource}
+                             className="p-2 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-600 hover:text-white transition-all"
+                           >
+                             <Plus size={16} />
+                           </button>
+                        </div>
+
+                        <div className="space-y-4">
+                           {normalizeResources(editingCourse.resources).length === 0 ? (
+                             <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-xs font-bold text-slate-400">
+                               Hələ resurs əlavə edilməyib.
+                             </div>
+                           ) : (
+                             normalizeResources(editingCourse.resources).map((resource, idx) => (
+                               <div key={resource.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-slate-50 p-3 rounded-2xl border border-transparent hover:border-slate-100">
+                                 <div className="md:col-span-4">
+                                   <input
+                                     type="text"
+                                     value={resource.title}
+                                     onChange={(e) => {
+                                       const next = normalizeResources(editingCourse.resources);
+                                       next[idx] = { ...next[idx], title: e.target.value };
+                                       setEditingCourse({ ...editingCourse, resources: next });
+                                     }}
+                                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 outline-none"
+                                     placeholder="Resurs adı (məs: PDF, Check-list)..."
+                                   />
+                                 </div>
+                                 <div className="md:col-span-7">
+                                   <input
+                                     type="url"
+                                     value={resource.url}
+                                     onChange={(e) => {
+                                       const next = normalizeResources(editingCourse.resources);
+                                       next[idx] = { ...next[idx], url: e.target.value };
+                                       setEditingCourse({ ...editingCourse, resources: next });
+                                     }}
+                                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 outline-none"
+                                     placeholder="https://... və ya /uploads/..."
+                                   />
+                                 </div>
+                                 <div className="md:col-span-1 flex justify-end">
+                                   <button
+                                     onClick={() => {
+                                       const next = normalizeResources(editingCourse.resources).filter((_, i) => i !== idx);
+                                       setEditingCourse({ ...editingCourse, resources: next });
+                                     }}
+                                     className="p-2 text-slate-300 hover:text-red-500 transition-all"
+                                   >
+                                     <Trash2 size={14} />
+                                   </button>
+                                 </div>
+                               </div>
+                             ))
+                           )}
                         </div>
                      </section>
 

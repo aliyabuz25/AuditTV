@@ -29,11 +29,18 @@ export interface Course {
   studentCount: number;
   modules: CourseModule[];
   perks: Array<string | CoursePerk>;
+  resources?: CourseResource[];
 }
 
 export interface CoursePerk {
   text: string;
   iconName: 'CheckCircle' | 'Shield' | 'Users' | 'BookOpen' | 'Star' | 'Clock';
+}
+
+export interface CourseResource {
+  id: string;
+  title: string;
+  url: string;
 }
 
 export type BlockType = 'paragraph' | 'heading' | 'image' | 'quote' | 'list';
