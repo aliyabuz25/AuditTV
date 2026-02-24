@@ -966,13 +966,11 @@ app.post('/api/course-requests', async (req, res) => {
     };
 
     const mail = await sendSubmissionEmail(submission);
-    if (!mail.sent) {
-      db.prepare('DELETE FROM course_requests WHERE email = ? AND course_id = ?').run(email, courseId);
-      res.status(502).json({ error: 'Mail göndərilə bilmədi', mailSent: false, mailReason: mail.reason || 'mail_failed' });
-      return;
-    }
-
-    res.status(201).json({ ok: true, mailSent: true, mailReason: '' });
+    res.status(201).json({
+      ok: true,
+      mailSent: mail.sent,
+      mailReason: mail.sent ? '' : mail.reason || 'mail_failed',
+    });
   } catch {
     const existing = db
       .prepare(
@@ -1056,13 +1054,12 @@ app.post('/api/submissions', async (req, res) => {
   };
 
   const mail = await sendSubmissionEmail(submission);
-  if (!mail.sent) {
-    db.prepare('DELETE FROM form_submissions WHERE id = ?').run(Number(info.lastInsertRowid));
-    res.status(502).json({ error: 'Mail göndərilə bilmədi', mailSent: false, mailReason: mail.reason || 'mail_failed' });
-    return;
-  }
-
-  res.status(201).json({ ok: true, id: info.lastInsertRowid, mailSent: true, mailReason: '' });
+  res.status(201).json({
+    ok: true,
+    id: info.lastInsertRowid,
+    mailSent: mail.sent,
+    mailReason: mail.sent ? '' : mail.reason || 'mail_failed',
+  });
 });
 
 app.get('/api/requests', (_req, res) => {
