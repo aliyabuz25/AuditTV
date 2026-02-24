@@ -565,34 +565,100 @@ function normalizeSmtpInput(input) {
   };
 }
 
-function createMailHtml(submission, title) {
-  const fields = [
-    ['Növ', title],
-    ['Ad', submission.fullName],
-    ['Email', submission.email],
-    ['Telefon', submission.phone],
-    ['Mövzu', submission.subject],
-    ['Kurs ID', submission.courseId],
-    ['Status', submission.status],
-    ['Tarix', submission.timestamp],
-    ['Mesaj', submission.message],
-  ].filter(([, value]) => asText(value));
+function resolveEmailAssetUrl(rawValue) {
+  const raw = asText(rawValue);
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('/')) return PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL}${raw}` : raw;
+  return PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL}/${raw.replace(/^\/+/, '')}` : raw;
+}
 
-  return `
-    <div style="font-family:Arial,sans-serif;line-height:1.5;color:#0f172a">
-      <h2 style="margin:0 0 12px 0">${title}</h2>
-      <table cellpadding="6" cellspacing="0" border="0">
-        ${fields
-          .map(
-            ([label, value]) =>
-              `<tr><td style="font-weight:700;color:#475569;vertical-align:top">${label}:</td><td>${String(
-                value,
-              ).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td></tr>`,
-          )
-          .join('')}
-      </table>
-    </div>
-  `;
+function createBrandedEmailHtml({
+  sitemap,
+  badge,
+  title,
+  intro,
+  fields,
+}) {
+  const siteName = asText(sitemap?.settings?.branding?.siteName) || 'audit.tv';
+  const logoUrl = resolveEmailAssetUrl(sitemap?.settings?.branding?.logoUrl);
+  const rowsHtml = fields
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#475569;font-weight:700;width:170px">${escapeHtml(label)}</td>
+          <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;color:#0f172a;font-weight:500;word-break:break-word">${escapeHtml(value)}</td>
+        </tr>
+      `,
+    )
+    .join('');
+
+  return `<!doctype html>
+<html lang="az">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(siteName)} Mail</title>
+  </head>
+  <body style="margin:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:28px 12px">
+      <tr>
+        <td align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:680px;background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden">
+            <tr>
+              <td style="padding:20px 24px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#ffffff">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="vertical-align:middle">
+                      ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(siteName)}" style="max-height:42px;display:block;margin-bottom:10px" />` : ''}
+                      <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93c5fd;font-weight:700">${escapeHtml(badge)}</div>
+                      <h1 style="margin:8px 0 6px 0;font-size:24px;line-height:1.25;color:#ffffff">${escapeHtml(title)}</h1>
+                      <p style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.6">${escapeHtml(intro)}</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 24px 12px 24px">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;border-collapse:separate;border-spacing:0">
+                  ${rowsHtml}
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:12px 24px 24px 24px;color:#64748b;font-size:12px;line-height:1.6">
+                Bu email ${escapeHtml(siteName)} platforması tərəfindən avtomatik yaradılıb.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}
+
+function createMailHtml(submission, title, sitemap) {
+  const fields = [
+    ['Növ', asText(title)],
+    ['Ad', asText(submission.fullName)],
+    ['Email', asText(submission.email)],
+    ['Telefon', asText(submission.phone)],
+    ['Mövzu', asText(submission.subject)],
+    ['Kurs ID', asText(submission.courseId)],
+    ['Status', asText(submission.status)],
+    ['Tarix', asText(submission.timestamp)],
+    ['Mesaj', asText(submission.message)],
+  ].filter(([, value]) => value);
+
+  return createBrandedEmailHtml({
+    sitemap,
+    badge: 'audit.tv Bildiriş',
+    title,
+    intro: 'Sayt üzərindən yeni müraciət qeydə alındı. Aşağıda detalları görə bilərsiniz.',
+    fields,
+  });
 }
 
 async function sendSubmissionEmail(submission) {
@@ -635,7 +701,7 @@ async function sendSubmissionEmail(submission) {
         ]
           .filter(Boolean)
           .join('\n'),
-        html: createMailHtml(submission, title),
+        html: createMailHtml(submission, title, sitemap),
       });
 
       return { sent: true };
@@ -829,7 +895,8 @@ app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
 });
 
 app.post('/api/admin/smtp-test', requireAdmin, async (req, res) => {
-  const fallback = getSmtpSettings(getStoredSitemap().sitemap);
+  const { sitemap } = getStoredSitemap();
+  const fallback = getSmtpSettings(sitemap);
   const fromBody = normalizeSmtpInput(req.body?.smtp);
   const smtp = {
     host: fromBody.host || fallback.host,
@@ -870,11 +937,18 @@ app.post('/api/admin/smtp-test', requireAdmin, async (req, res) => {
       to: recipients,
       subject: '[audit.tv] SMTP Test Mail',
       text: `SMTP test mail ugurla gonderildi.\nTarix: ${new Date().toISOString()}\nAlicilar: ${recipients.join(', ')}`,
-      html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a">
-        <h2 style="margin:0 0 12px 0">SMTP test mail ugurla gonderildi</h2>
-        <p style="margin:0 0 8px 0"><strong>Tarix:</strong> ${escapeHtml(new Date().toISOString())}</p>
-        <p style="margin:0"><strong>Alicilar:</strong> ${escapeHtml(recipients.join(', '))}</p>
-      </div>`,
+      html: createBrandedEmailHtml({
+        sitemap,
+        badge: 'SMTP Test',
+        title: 'SMTP test mail uğurla göndərildi',
+        intro: 'Bu məktub SMTP ayarlarının işlədiyini təsdiqləmək üçün göndərildi.',
+        fields: [
+          ['Tarix', new Date().toISOString()],
+          ['Alıcılar', recipients.join(', ')],
+          ['SMTP Host', smtp.host],
+          ['SMTP Port', String(smtp.port)],
+        ],
+      }),
     });
 
     res.json({ ok: true, to: recipients });

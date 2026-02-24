@@ -56,8 +56,8 @@ const ContactPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-3xl mx-auto mb-20">
-           <h1 className="text-5xl font-black text-slate-900 mb-6 tracking-tight">{contact.pageTitle}</h1>
-           <p className="text-slate-500 text-lg font-medium leading-relaxed">
+           <h1 className="text-5xl font-black text-slate-900 mb-6 tracking-tight break-words [overflow-wrap:anywhere]">{contact.pageTitle}</h1>
+           <p className="text-slate-500 text-lg font-medium leading-relaxed break-words [overflow-wrap:anywhere]">
              {contact.pageDescription}
            </p>
         </div>
@@ -71,10 +71,10 @@ const ContactPage: React.FC = () => {
                   <div className="w-14 h-14 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center flex-shrink-0">
                      <MapPin size={28} />
                   </div>
-                  <div>
-                     <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">{contact.officeTitle}</h4>
-                     <p className="text-slate-900 font-black text-lg">{contact.address}</p>
-                     <p className="text-slate-500 font-medium">{contact.officeSubtitle}</p>
+                  <div className="min-w-0">
+                     <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2 break-words [overflow-wrap:anywhere]">{contact.officeTitle}</h4>
+                     <p className="text-slate-900 font-black text-lg break-words [overflow-wrap:anywhere]">{contact.address}</p>
+                     <p className="text-slate-500 font-medium break-words [overflow-wrap:anywhere]">{contact.officeSubtitle}</p>
                   </div>
                </div>
             </div>
@@ -84,10 +84,10 @@ const ContactPage: React.FC = () => {
                   <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
                      <Phone size={28} />
                   </div>
-                  <div>
-                     <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">{contact.callCenterTitle}</h4>
-                     <p className="text-slate-900 font-black text-lg">{contact.phone}</p>
-                     <p className="text-slate-500 font-medium">{contact.callCenterSubtitle}</p>
+                  <div className="min-w-0">
+                     <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2 break-words [overflow-wrap:anywhere]">{contact.callCenterTitle}</h4>
+                     <p className="text-slate-900 font-black text-lg break-words [overflow-wrap:anywhere]">{contact.phone}</p>
+                     <p className="text-slate-500 font-medium break-words [overflow-wrap:anywhere]">{contact.callCenterSubtitle}</p>
                   </div>
                </div>
             </div>
@@ -97,10 +97,10 @@ const ContactPage: React.FC = () => {
                   <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
                      <Mail size={28} />
                   </div>
-                  <div>
-                     <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2">{contact.emailTitle}</h4>
-                     <p className="text-slate-900 font-black text-lg">{contact.email}</p>
-                     <p className="text-slate-500 font-medium">{contact.emailSubtitle}</p>
+                  <div className="min-w-0">
+                     <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-2 break-words [overflow-wrap:anywhere]">{contact.emailTitle}</h4>
+                     <p className="text-slate-900 font-black text-lg break-words [overflow-wrap:anywhere]">{contact.email}</p>
+                     <p className="text-slate-500 font-medium break-words [overflow-wrap:anywhere]">{contact.emailSubtitle}</p>
                   </div>
                </div>
             </div>
@@ -111,8 +111,8 @@ const ContactPage: React.FC = () => {
                   <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
                      <Share2 size={28} />
                   </div>
-                  <div>
-                     <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">{contact.socialTitle}</h4>
+                  <div className="min-w-0">
+                     <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 break-words [overflow-wrap:anywhere]">{contact.socialTitle}</h4>
                      <div className="flex gap-4">
                         <a href={contact.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 hover:bg-primary-600 hover:text-white hover:scale-110 transition-all duration-300">
                            <Linkedin size={20} />
@@ -132,10 +132,10 @@ const ContactPage: React.FC = () => {
                <div className="absolute top-0 right-0 p-4 opacity-10">
                   <Clock size={120} />
                </div>
-               <h4 className="text-xl font-black mb-4 flex items-center gap-2">
+               <h4 className="text-xl font-black mb-4 flex items-center gap-2 break-words [overflow-wrap:anywhere]">
                  <MessageSquare size={20} className="text-primary-500" /> {contact.responseTitle}
                </h4>
-               <p className="text-slate-400 leading-relaxed font-medium">
+               <p className="text-slate-400 leading-relaxed font-medium break-words [overflow-wrap:anywhere]">
                  {contact.responseTime} {contact.responseSuffix}
                </p>
             </div>
@@ -143,8 +143,8 @@ const ContactPage: React.FC = () => {
 
           {/* Form Side */}
           <div className="lg:col-span-7 bg-white rounded-[2.5rem] border border-slate-100 edu-card-shadow p-10 md:p-14">
-             <h3 className="text-3xl font-black text-slate-900 mb-3">{contact.formTitle}</h3>
-             <p className="text-slate-400 text-sm font-medium mb-10">{contact.formDescription}</p>
+             <h3 className="text-3xl font-black text-slate-900 mb-3 break-words [overflow-wrap:anywhere]">{contact.formTitle}</h3>
+             <p className="text-slate-400 text-sm font-medium mb-10 break-words [overflow-wrap:anywhere]">{contact.formDescription}</p>
              <form onSubmit={handleContactSubmit} className="space-y-8">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
