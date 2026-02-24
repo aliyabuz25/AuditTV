@@ -290,11 +290,11 @@ const EducationManager: React.FC = () => {
          <div
            className={
              isStandaloneEditor
-               ? 'fixed inset-0 z-[100] bg-slate-50 overflow-hidden'
+               ? 'fixed inset-0 z-[100] bg-slate-50 overflow-hidden w-screen h-screen'
                : 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xl animate-in fade-in duration-300'
            }
          >
-            <div className={isStandaloneEditor ? 'bg-slate-50 w-full h-full overflow-hidden shadow-2xl flex flex-col' : 'bg-slate-50 w-full h-full lg:max-w-[1400px] lg:h-[95vh] lg:rounded-[4rem] overflow-hidden shadow-2xl flex flex-col'}>
+            <div className={isStandaloneEditor ? 'bg-slate-50 w-screen h-screen overflow-hidden shadow-none rounded-none flex flex-col' : 'bg-slate-50 w-full h-full lg:max-w-[1400px] lg:h-[95vh] lg:rounded-[4rem] overflow-hidden shadow-2xl flex flex-col'}>
                
                {/* Modal Top Bar */}
                <div className="bg-white border-b border-slate-200 p-8 flex justify-between items-center">
