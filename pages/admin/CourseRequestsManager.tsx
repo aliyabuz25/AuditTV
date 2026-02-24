@@ -192,16 +192,16 @@ const CourseRequestsManager: React.FC = () => {
         </div>
       </header>
 
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-        <table className="w-full text-left text-xs">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-x-auto">
+        <table className="w-full min-w-[1080px] text-left text-xs">
           <thead className="text-[10px] uppercase bg-slate-50 text-slate-400 border-b border-slate-100">
             <tr>
-              <th className="px-6 py-4 font-black tracking-widest">Növ</th>
-              <th className="px-6 py-4 font-black tracking-widest">Müraciət</th>
-              <th className="px-6 py-4 font-black tracking-widest">Məzmun</th>
-              <th className="px-6 py-4 font-black tracking-widest">Tarix</th>
-              <th className="px-6 py-4 font-black tracking-widest">Status</th>
-              <th className="px-6 py-4 font-black tracking-widest text-right">İşləmlər</th>
+              <th className="px-4 py-4 font-black tracking-widest whitespace-nowrap">Növ</th>
+              <th className="px-4 py-4 font-black tracking-widest whitespace-nowrap">Müraciət</th>
+              <th className="px-4 py-4 font-black tracking-widest whitespace-nowrap">Məzmun</th>
+              <th className="px-4 py-4 font-black tracking-widest whitespace-nowrap">Tarix</th>
+              <th className="px-4 py-4 font-black tracking-widest whitespace-nowrap">Status</th>
+              <th className="px-4 py-4 font-black tracking-widest text-right whitespace-nowrap">İşləmlər</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
@@ -220,20 +220,20 @@ const CourseRequestsManager: React.FC = () => {
 
                 return (
                   <tr key={`${req.type}-${req.id || `${req.email}-${req.courseId || req.timestamp}`}`} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <div className="flex items-center gap-2 text-slate-600 font-black">
                         {req.type === 'course' ? <BookOpen size={14} /> : req.type === 'contact' ? <MessageSquare size={14} /> : <Mail size={14} />}
                         {typeLabel}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <div className="flex flex-col">
                         <span className="font-black text-slate-900">{req.fullName || 'Adsız'}</span>
                         <span className="text-slate-400 text-[10px]">{req.email || '-'}</span>
                         {req.phone ? <span className="text-slate-400 text-[10px]">{req.phone}</span> : null}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">
+                    <td className="px-4 py-4 text-slate-600">
                       {req.type === 'course' ? (
                         <div className="font-medium">{getCourseTitle(String(req.courseId || ''))}</div>
                       ) : (
@@ -243,8 +243,8 @@ const CourseRequestsManager: React.FC = () => {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-slate-400">{req.timestamp}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4 text-slate-400 whitespace-nowrap">{req.timestamp}</td>
+                    <td className="px-4 py-4">
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-black ${
                           req.status === 'approved' || req.status === 'resolved'
@@ -257,7 +257,7 @@ const CourseRequestsManager: React.FC = () => {
                         {req.status.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 py-4 text-right">
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => setSelectedRequest(req)}
