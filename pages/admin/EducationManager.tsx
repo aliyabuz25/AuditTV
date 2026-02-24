@@ -44,8 +44,7 @@ const normalizeResources = (resources: Course['resources'] | undefined): CourseR
       id: String(resource?.id || `${Date.now()}-${index}`),
       title: String(resource?.title || ''),
       url: String(resource?.url || ''),
-    }))
-    .filter((resource) => resource.title || resource.url);
+    }));
 
 const EducationManager: React.FC = () => {
   const { sitemap, saveSection } = useSiteData();
