@@ -290,11 +290,11 @@ const EducationManager: React.FC = () => {
          <div
            className={
              isStandaloneEditor
-               ? 'fixed inset-0 z-[100] bg-slate-50'
+               ? 'fixed inset-0 z-[100] bg-slate-50 overflow-hidden'
                : 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xl animate-in fade-in duration-300'
            }
          >
-            <div className={isStandaloneEditor ? 'bg-slate-50 w-full min-h-screen overflow-hidden shadow-2xl flex flex-col' : 'bg-slate-50 w-full h-full lg:max-w-[1400px] lg:h-[95vh] lg:rounded-[4rem] overflow-hidden shadow-2xl flex flex-col'}>
+            <div className={isStandaloneEditor ? 'bg-slate-50 w-full h-full overflow-hidden shadow-2xl flex flex-col' : 'bg-slate-50 w-full h-full lg:max-w-[1400px] lg:h-[95vh] lg:rounded-[4rem] overflow-hidden shadow-2xl flex flex-col'}>
                
                {/* Modal Top Bar */}
                <div className="bg-white border-b border-slate-200 p-8 flex justify-between items-center">
@@ -313,7 +313,7 @@ const EducationManager: React.FC = () => {
                   </div>
                </div>
 
-               <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+               <div className="flex-1 min-h-0 overflow-y-auto p-12 custom-scrollbar">
                   <div className="max-w-6xl mx-auto space-y-16">
                      
                      {/* A. BASIC INFO & MEDIA */}
