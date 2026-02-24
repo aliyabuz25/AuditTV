@@ -273,6 +273,10 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function formatAzerbaijanDateTime(value = new Date()) {
+  return value.toLocaleString('az-AZ', { timeZone: 'Asia/Baku' });
+}
+
 function buildAbsoluteUrl(req, relativeUrl) {
   if (PUBLIC_BASE_URL) {
     return `${PUBLIC_BASE_URL}${relativeUrl}`;
@@ -1089,7 +1093,7 @@ app.post('/api/course-requests', async (req, res) => {
     return;
   }
 
-  const timestamp = new Date().toLocaleString('az-AZ');
+  const timestamp = formatAzerbaijanDateTime();
   const createdAt = new Date().toISOString();
   try {
     db.prepare(
@@ -1162,7 +1166,7 @@ app.post('/api/submissions', async (req, res) => {
     return;
   }
 
-  const timestamp = new Date().toLocaleString('az-AZ');
+  const timestamp = formatAzerbaijanDateTime();
   const createdAt = new Date().toISOString();
   const normalizedStatus = 'pending';
 

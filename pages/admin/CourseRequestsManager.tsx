@@ -301,7 +301,7 @@ const CourseRequestsManager: React.FC = () => {
 
       {selectedRequest ? (
         <div className="fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
+          <div className="w-full max-w-2xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
             <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-black text-slate-900">Müraciət Detayı</h3>
@@ -316,18 +316,18 @@ const CourseRequestsManager: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
+            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-5 text-sm overflow-y-auto">
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Ad</p>
-                <p className="font-bold text-slate-900">{selectedRequest.fullName || 'Adsız'}</p>
+                <p className="font-bold text-slate-900 break-words [overflow-wrap:anywhere]">{selectedRequest.fullName || 'Adsız'}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Email</p>
-                <p className="font-bold text-slate-900">{selectedRequest.email || '-'}</p>
+                <p className="font-bold text-slate-900 break-words [overflow-wrap:anywhere]">{selectedRequest.email || '-'}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Telefon</p>
-                <p className="font-bold text-slate-900">{selectedRequest.phone || '-'}</p>
+                <p className="font-bold text-slate-900 break-words [overflow-wrap:anywhere]">{selectedRequest.phone || '-'}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Tarix</p>
@@ -335,31 +335,31 @@ const CourseRequestsManager: React.FC = () => {
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Status</p>
-                <p className="font-bold text-slate-900">{selectedRequest.status}</p>
+                <p className="font-bold text-slate-900 break-words [overflow-wrap:anywhere]">{selectedRequest.status}</p>
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Növ</p>
-                <p className="font-bold text-slate-900">{selectedRequest.type}</p>
+                <p className="font-bold text-slate-900 break-words [overflow-wrap:anywhere]">{selectedRequest.type}</p>
               </div>
 
               {selectedRequest.courseId ? (
                 <div className="md:col-span-2">
                   <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Kurs</p>
-                  <p className="font-bold text-slate-900">{getCourseTitle(selectedRequest.courseId)}</p>
+                  <p className="font-bold text-slate-900 break-words [overflow-wrap:anywhere]">{getCourseTitle(selectedRequest.courseId)}</p>
                 </div>
               ) : null}
 
               {selectedRequest.subject ? (
                 <div className="md:col-span-2">
                   <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Mövzu</p>
-                  <p className="font-bold text-slate-900">{selectedRequest.subject}</p>
+                  <p className="font-bold text-slate-900 break-words [overflow-wrap:anywhere]">{selectedRequest.subject}</p>
                 </div>
               ) : null}
 
               {selectedRequest.message ? (
                 <div className="md:col-span-2">
                   <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Mesaj</p>
-                  <p className="font-medium text-slate-700 whitespace-pre-wrap">{selectedRequest.message}</p>
+                  <p className="font-medium text-slate-700 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{selectedRequest.message}</p>
                 </div>
               ) : null}
             </div>
