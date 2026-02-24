@@ -76,6 +76,7 @@ const App: React.FC = () => {
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/edit-class" element={<EducationManager />} />
             <Route path="/admin/*" element={<AdminLayout />}>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="podcast-stats" element={<PodcastDashboard />} />

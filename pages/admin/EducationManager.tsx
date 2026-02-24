@@ -1,5 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Save, Plus, Trash2, BookOpen, Star, Layout, Check, 
   Edit3, X, Image as ImageIcon, Upload, Clock, 
@@ -12,6 +13,7 @@ import { useSiteData } from '../../site/SiteDataContext';
 
 const PERK_ICON_OPTIONS: CoursePerk['iconName'][] = ['CheckCircle', 'Shield', 'Users', 'BookOpen', 'Star', 'Clock'];
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const TOKEN_KEY = 'audit_admin_token';
 
 const PERK_ICON_COMPONENTS: Record<CoursePerk['iconName'], React.ComponentType<{ size?: number; className?: string }>> = {
   CheckCircle,
@@ -47,6 +49,10 @@ const normalizeResources = (resources: Course['resources'] | undefined): CourseR
     }));
 
 const EducationManager: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isStandaloneEditor = location.pathname === '/edit-class';
   const { sitemap, saveSection } = useSiteData();
   const [courses, setCourses] = useState<Course[]>(sitemap.education.courses);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,20 +71,24 @@ const EducationManager: React.FC = () => {
     setPageHeader(sitemap.education.pageHeader);
   }, [sitemap.education]);
 
-  const handleSaveAll = async () => {
-    const ok = await saveSection('education', { pageHeader, courses });
-    if (ok) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+  useEffect(() => {
+    if (!isStandaloneEditor) return;
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      navigate('/admin');
     }
-  };
+  }, [isStandaloneEditor, navigate]);
 
-  const openEditModal = (course: Course | null = null) => {
-    if (course) {
+  useEffect(() => {
+    if (!isStandaloneEditor) return;
+    const editId = String(searchParams.get('id') || '').trim();
+    const editingExisting = editId ? sitemap.education.courses.find((course) => String(course.id) === editId) : null;
+
+    if (editingExisting) {
       setEditingCourse({
-        ...course,
-        perks: normalizePerks(course.perks),
-        resources: normalizeResources(course.resources),
+        ...editingExisting,
+        perks: normalizePerks(editingExisting.perks),
+        resources: normalizeResources(editingExisting.resources),
       });
     } else {
       setEditingCourse({
@@ -101,6 +111,14 @@ const EducationManager: React.FC = () => {
       });
     }
     setIsModalOpen(true);
+  }, [isStandaloneEditor, searchParams, sitemap.education.courses]);
+
+  const handleSaveAll = async () => {
+    const ok = await saveSection('education', { pageHeader, courses });
+    if (ok) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
   };
 
   const handleCourseSave = async () => {
@@ -112,6 +130,10 @@ const EducationManager: React.FC = () => {
     const ok = await saveSection('education', { pageHeader, courses: nextCourses });
     if (!ok) return;
     setCourses(nextCourses);
+    if (isStandaloneEditor) {
+      navigate('/admin/education');
+      return;
+    }
     setIsModalOpen(false);
     setEditingCourse(null);
   };
@@ -174,6 +196,14 @@ const EducationManager: React.FC = () => {
     }
   };
 
+  if (isStandaloneEditor && !editingCourse) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500 font-black">
+        Yüklənir...
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-12 pb-32">
       {/* 1. Header with Global Save */}
@@ -183,7 +213,7 @@ const EducationManager: React.FC = () => {
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Kurslar və Kurikulum Sistemi</p>
         </div>
         <div className="flex gap-4">
-           <button onClick={() => openEditModal()} className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95">
+           <button onClick={() => navigate('/edit-class?new=1')} className="bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-black text-sm flex items-center gap-2 hover:bg-slate-800 transition-all active:scale-95">
               <Plus size={18} /> Yeni Kurs Yarat
            </button>
            <button onClick={handleSaveAll} className="bg-primary-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm flex items-center gap-2 shadow-2xl shadow-primary-200 transition-all hover:scale-[1.02] active:scale-95">
@@ -242,7 +272,7 @@ const EducationManager: React.FC = () => {
                         </div>
                      </div>
                      <div className="flex gap-2 pt-6 border-t border-slate-50">
-                        <button onClick={() => openEditModal(course)} className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-50 text-slate-600 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-primary-50 hover:text-primary-600 transition-all">
+                        <button onClick={() => navigate(`/edit-class?id=${encodeURIComponent(String(course.id))}`)} className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-50 text-slate-600 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-primary-50 hover:text-primary-600 transition-all">
                            <Edit3 size={16} /> Redaktə Et
                         </button>
                         <button onClick={() => setCourses(courses.filter(c => c.id !== course.id))} className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">
@@ -255,22 +285,28 @@ const EducationManager: React.FC = () => {
          </div>
       </section>
 
-      {/* 4. FULL COURSE CONTENT EDITOR MODAL */}
-      {isModalOpen && editingCourse && (
-         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xl animate-in fade-in duration-300">
-            <div className="bg-slate-50 w-full h-full lg:max-w-[1400px] lg:h-[95vh] lg:rounded-[4rem] overflow-hidden shadow-2xl flex flex-col">
+      {/* 4. FULL COURSE CONTENT EDITOR */}
+      {(isModalOpen || isStandaloneEditor) && editingCourse && (
+         <div
+           className={
+             isStandaloneEditor
+               ? 'fixed inset-0 z-[100] bg-slate-50'
+               : 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xl animate-in fade-in duration-300'
+           }
+         >
+            <div className={isStandaloneEditor ? 'bg-slate-50 w-full min-h-screen overflow-hidden shadow-2xl flex flex-col' : 'bg-slate-50 w-full h-full lg:max-w-[1400px] lg:h-[95vh] lg:rounded-[4rem] overflow-hidden shadow-2xl flex flex-col'}>
                
                {/* Modal Top Bar */}
                <div className="bg-white border-b border-slate-200 p-8 flex justify-between items-center">
                   <div className="flex items-center gap-4">
-                     <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><ArrowLeft size={24} /></button>
+                     <button onClick={() => (isStandaloneEditor ? navigate('/admin/education') : setIsModalOpen(false))} className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><ArrowLeft size={24} /></button>
                      <div>
                         <h2 className="text-2xl font-black text-slate-900">Kurs Redaktoru</h2>
                         <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Bütün tədris parametrləri buradadır</p>
                      </div>
                   </div>
                   <div className="flex gap-4">
-                     <button onClick={() => setIsModalOpen(false)} className="px-8 py-3.5 text-slate-400 font-black text-xs uppercase tracking-widest hover:text-slate-900 transition-all">Ləğv Et</button>
+                     <button onClick={() => (isStandaloneEditor ? navigate('/admin/education') : setIsModalOpen(false))} className="px-8 py-3.5 text-slate-400 font-black text-xs uppercase tracking-widest hover:text-slate-900 transition-all">Ləğv Et</button>
                      <button onClick={handleCourseSave} className="bg-primary-600 text-white px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all">
                         <Check size={18} /> Kursu Saxla
                      </button>
