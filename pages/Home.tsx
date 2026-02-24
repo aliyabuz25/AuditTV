@@ -166,7 +166,13 @@ const Home: React.FC = () => {
                {PODCAST_EPISODES.map(episode => (
                   <div key={episode.id} className="group bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden hover:edu-card-shadow transition-all duration-300 flex flex-col h-full">
                      <div className="aspect-video relative overflow-hidden">
-                        <img src={episode.thumbnailUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={episode.title} />
+                        <ImageWithPlaceholder
+                          src={episode.thumbnailUrl}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          alt={episode.title}
+                          placeholderClassName="bg-slate-100"
+                          placeholderText="Görsel seçilməyib"
+                        />
                         <div className="absolute inset-0 bg-slate-900/10 group-hover:bg-transparent transition-colors"></div>
                         <div className="absolute inset-0 flex items-center justify-center">
                            <div className="w-16 h-16 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-2xl transform scale-90 group-hover:scale-100 transition-all">

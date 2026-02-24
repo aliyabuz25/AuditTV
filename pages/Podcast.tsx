@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mic, Play, Clock, Calendar, Headphones, Search, X } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 import CsPlayerEmbed, { getYouTubeVideoId } from '../components/CsPlayerEmbed';
+import ImageWithPlaceholder from '../components/ImageWithPlaceholder';
 
 const PodcastPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,7 +61,13 @@ const PodcastPage: React.FC = () => {
           {filteredEpisodes.map(episode => (
             <div key={episode.id} className="group bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden hover:edu-card-shadow transition-all duration-300 flex flex-col">
                <button className="aspect-video relative overflow-hidden text-left" onClick={() => setActiveEpisodeId(episode.id)}>
-                  <img src={episode.thumbnailUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
+                  <ImageWithPlaceholder
+                    src={episode.thumbnailUrl}
+                    alt={episode.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    placeholderClassName="bg-slate-100"
+                    placeholderText="Görsel seçilməyib"
+                  />
                   <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-transparent transition-colors"></div>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                      <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl">
