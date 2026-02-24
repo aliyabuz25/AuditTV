@@ -12,6 +12,10 @@ const DB_PATH = process.env.SQLITE_PATH || path.resolve(process.cwd(), 'data', '
 const SITEMAP_PATH = process.env.SITEMAP_FILE || path.resolve(process.cwd(), 'current-sitemap.json');
 const DB_DIR = path.dirname(DB_PATH);
 const SITEMAP_DIR = path.dirname(SITEMAP_PATH);
+const SITEMAP_MIRROR_PATH =
+  path.basename(SITEMAP_PATH) === 'sitemap-current.json'
+    ? path.join(SITEMAP_DIR, 'current-sitemap.json')
+    : path.join(SITEMAP_DIR, 'sitemap-current.json');
 const UPLOADS_DIR = process.env.UPLOADS_DIR || path.resolve(process.cwd(), 'uploads');
 const PUBLIC_BASE_URL = String(process.env.PUBLIC_BASE_URL || '').trim().replace(/\/$/, '');
 
@@ -138,16 +142,17 @@ if (!adminCount?.count) {
 }
 
 function readSitemapFromFile() {
-  if (!fs.existsSync(SITEMAP_PATH)) {
-    return {};
+  const candidates = [SITEMAP_PATH, SITEMAP_MIRROR_PATH];
+  for (const filePath of candidates) {
+    if (!fs.existsSync(filePath)) continue;
+    try {
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      return fileContent.trim() ? JSON.parse(fileContent) : {};
+    } catch {
+      // Try next candidate
+    }
   }
-
-  try {
-    const fileContent = fs.readFileSync(SITEMAP_PATH, 'utf8');
-    return fileContent.trim() ? JSON.parse(fileContent) : {};
-  } catch {
-    return {};
-  }
+  return {};
 }
 
 function normalizeSitemap(raw) {
@@ -213,9 +218,12 @@ function normalizeSitemap(raw) {
 }
 
 function writeSitemapFile(sitemap) {
-  const tmpPath = `${SITEMAP_PATH}.tmp`;
-  fs.writeFileSync(tmpPath, `${JSON.stringify(sitemap, null, 2)}\n`, 'utf8');
-  fs.renameSync(tmpPath, SITEMAP_PATH);
+  const targets = [SITEMAP_PATH, SITEMAP_MIRROR_PATH];
+  for (const targetPath of targets) {
+    const tmpPath = `${targetPath}.tmp`;
+    fs.writeFileSync(tmpPath, `${JSON.stringify(sitemap, null, 2)}\n`, 'utf8');
+    fs.renameSync(tmpPath, targetPath);
+  }
 }
 
 function getStoredSitemap() {
