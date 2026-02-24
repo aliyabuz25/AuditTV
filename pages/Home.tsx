@@ -44,13 +44,15 @@ const Home: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Abunəlik qeydə alınmadı');
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(String(payload.error || 'Abunəlik qeydə alınmadı'));
       }
 
       toast.success('Abunəliyiniz qeydə alındı. Yenilikləri e-poçtla göndərəcəyik.');
       form.reset();
-    } catch {
-      toast.error('Abunəlik zamanı xəta baş verdi. Yenidən cəhd edin.');
+    } catch (err) {
+      const message = err instanceof Error && err.message ? err.message : 'Abunəlik zamanı xəta baş verdi. Yenidən cəhd edin.';
+      toast.error(message);
     }
   };
 

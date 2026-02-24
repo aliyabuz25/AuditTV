@@ -39,13 +39,15 @@ const ContactPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Mesaj göndərilmədi');
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(String(payload.error || 'Mesaj göndərilmədi'));
       }
 
       toast.success('Mesajınız uğurla göndərildi. Tezliklə sizinlə əlaqə saxlayacağıq.');
       form.reset();
-    } catch {
-      toast.error('Mesaj göndərilərkən xəta baş verdi. Yenidən cəhd edin.');
+    } catch (err) {
+      const message = err instanceof Error && err.message ? err.message : 'Mesaj göndərilərkən xəta baş verdi. Yenidən cəhd edin.';
+      toast.error(message);
     }
   };
 

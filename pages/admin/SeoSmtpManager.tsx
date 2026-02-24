@@ -31,6 +31,24 @@ const textToLinks = (text: string) =>
     })
     .filter((l) => l.label && l.path);
 
+const EMAIL_SPLIT_REGEX = /[,\n;،]/;
+const SIMPLE_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+
+const normalizeNotifyEmails = (raw: string) => {
+  const seen = new Set<string>();
+  return raw
+    .split(EMAIL_SPLIT_REGEX)
+    .map((part) => part.trim())
+    .filter((email) => {
+      if (!email || !SIMPLE_EMAIL_REGEX.test(email)) return false;
+      const key = email.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .join(', ');
+};
+
 const SeoSmtpManager: React.FC = () => {
   const { sitemap, saveSection } = useSiteData();
   const [saved, setSaved] = useState(false);
@@ -47,7 +65,15 @@ const SeoSmtpManager: React.FC = () => {
   }, [sitemap.settings]);
 
   const handleSave = async () => {
-    const ok = await saveSection('settings', settings);
+    const normalizedSettings = {
+      ...settings,
+      smtp: {
+        ...settings.smtp,
+        notifyEmails: normalizeNotifyEmails(settings.smtp.notifyEmails || ''),
+      },
+    };
+    setSettings(normalizedSettings);
+    const ok = await saveSection('settings', normalizedSettings);
     if (ok) {
       setSaved(true);
       setTimeout(() => setSaved(false), 1800);
@@ -152,6 +178,12 @@ const SeoSmtpManager: React.FC = () => {
             rows={2}
             value={settings.smtp.notifyEmails || ''}
             onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp, notifyEmails: e.target.value } })}
+            onBlur={(e) =>
+              setSettings({
+                ...settings,
+                smtp: { ...settings.smtp, notifyEmails: normalizeNotifyEmails(e.target.value) },
+              })
+            }
             placeholder="mail1@example.com, mail2@example.com"
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700"
           />

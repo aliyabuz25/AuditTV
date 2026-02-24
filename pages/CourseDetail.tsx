@@ -159,7 +159,8 @@ const CourseDetail: React.FC = () => {
         body: JSON.stringify(newRequest),
       });
       if (!submitResponse.ok) {
-        const message = 'Müraciət göndərilərkən xəta baş verdi.';
+        const payload = await submitResponse.json().catch(() => ({}));
+        const message = String(payload.error || 'Müraciət göndərilərkən xəta baş verdi.');
         setError(message);
         toast.error(message);
         return;

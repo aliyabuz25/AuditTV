@@ -507,17 +507,34 @@ function formatSubmissionType(type) {
   return 'Müraciət';
 }
 
+const SIMPLE_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+
+function parseRecipientEmails(value) {
+  const input = String(value || '');
+  if (!input.trim()) return [];
+
+  const seen = new Set();
+  const recipients = [];
+  const chunks = input.split(/[,\n;،]/);
+  for (const chunk of chunks) {
+    const email = asText(chunk);
+    if (!email || !SIMPLE_EMAIL_REGEX.test(email)) continue;
+    const key = email.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    recipients.push(email);
+  }
+  return recipients;
+}
+
 function getSubmissionRecipient(sitemap) {
   const settings = sitemap?.settings || {};
   const smtp = settings.smtp || {};
-  const rawList = asText(smtp.notifyEmails || smtp.notifyEmail);
-  const list = rawList
-    .split(/[,\n;]/)
-    .map((entry) => asText(entry))
-    .filter(Boolean);
+  const rawList = smtp.notifyEmails || smtp.notifyEmail;
+  const list = parseRecipientEmails(rawList);
   if (list.length > 0) return list;
   const fallback = asText(settings.footer?.email || sitemap?.contact?.email);
-  return fallback ? [fallback] : [];
+  return parseRecipientEmails(fallback);
 }
 
 function getSmtpSettings(sitemap) {
@@ -571,40 +588,52 @@ async function sendSubmissionEmail(submission) {
   if (!smtp.host || !smtp.port || !smtp.username || !smtp.password || !smtp.fromEmail || to.length === 0) {
     return { sent: false, reason: 'smtp_not_configured' };
   }
-
-  const transporter = nodemailer.createTransport({
-    host: smtp.host,
-    port: smtp.port,
-    secure: smtp.secure,
-    auth: {
-      user: smtp.username,
-      pass: smtp.password,
-    },
-  });
-
   const title = formatSubmissionType(submission.type);
-  await transporter.sendMail({
-    from: smtp.fromName ? `"${smtp.fromName}" <${smtp.fromEmail}>` : smtp.fromEmail,
-    to,
-    replyTo: asText(submission.email) || undefined,
-    subject: `[audit.tv] ${title}`,
-    text: [
-      `Növ: ${title}`,
-      submission.fullName ? `Ad: ${submission.fullName}` : '',
-      submission.email ? `Email: ${submission.email}` : '',
-      submission.phone ? `Telefon: ${submission.phone}` : '',
-      submission.subject ? `Mövzu: ${submission.subject}` : '',
-      submission.courseId ? `Kurs ID: ${submission.courseId}` : '',
-      submission.status ? `Status: ${submission.status}` : '',
-      submission.timestamp ? `Tarix: ${submission.timestamp}` : '',
-      submission.message ? `Mesaj: ${submission.message}` : '',
-    ]
-      .filter(Boolean)
-      .join('\n'),
-    html: createMailHtml(submission, title),
-  });
 
-  return { sent: true };
+  let lastError = '';
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: smtp.host,
+        port: smtp.port,
+        secure: smtp.secure,
+        auth: {
+          user: smtp.username,
+          pass: smtp.password,
+        },
+      });
+
+      await transporter.sendMail({
+        from: smtp.fromName ? `"${smtp.fromName}" <${smtp.fromEmail}>` : smtp.fromEmail,
+        to,
+        replyTo: asText(submission.email) || undefined,
+        subject: `[audit.tv] ${title}`,
+        text: [
+          `Növ: ${title}`,
+          submission.fullName ? `Ad: ${submission.fullName}` : '',
+          submission.email ? `Email: ${submission.email}` : '',
+          submission.phone ? `Telefon: ${submission.phone}` : '',
+          submission.subject ? `Mövzu: ${submission.subject}` : '',
+          submission.courseId ? `Kurs ID: ${submission.courseId}` : '',
+          submission.status ? `Status: ${submission.status}` : '',
+          submission.timestamp ? `Tarix: ${submission.timestamp}` : '',
+          submission.message ? `Mesaj: ${submission.message}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n'),
+        html: createMailHtml(submission, title),
+      });
+
+      return { sent: true };
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : 'mail_failed';
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
+      }
+    }
+  }
+
+  return { sent: false, reason: lastError || 'mail_failed' };
 }
 
 const app = express();
@@ -936,17 +965,14 @@ app.post('/api/course-requests', async (req, res) => {
       timestamp,
     };
 
-    let mailSent = false;
-    let mailReason = '';
-    try {
-      const mail = await sendSubmissionEmail(submission);
-      mailSent = mail.sent;
-      mailReason = mail.reason || '';
-    } catch (err) {
-      mailReason = err instanceof Error ? err.message : 'mail_failed';
+    const mail = await sendSubmissionEmail(submission);
+    if (!mail.sent) {
+      db.prepare('DELETE FROM course_requests WHERE email = ? AND course_id = ?').run(email, courseId);
+      res.status(502).json({ error: 'Mail göndərilə bilmədi', mailSent: false, mailReason: mail.reason || 'mail_failed' });
+      return;
     }
 
-    res.status(201).json({ ok: true, mailSent, mailReason });
+    res.status(201).json({ ok: true, mailSent: true, mailReason: '' });
   } catch {
     const existing = db
       .prepare(
@@ -1029,17 +1055,14 @@ app.post('/api/submissions', async (req, res) => {
     timestamp,
   };
 
-  let mailSent = false;
-  let mailReason = '';
-  try {
-    const mail = await sendSubmissionEmail(submission);
-    mailSent = mail.sent;
-    mailReason = mail.reason || '';
-  } catch (err) {
-    mailReason = err instanceof Error ? err.message : 'mail_failed';
+  const mail = await sendSubmissionEmail(submission);
+  if (!mail.sent) {
+    db.prepare('DELETE FROM form_submissions WHERE id = ?').run(Number(info.lastInsertRowid));
+    res.status(502).json({ error: 'Mail göndərilə bilmədi', mailSent: false, mailReason: mail.reason || 'mail_failed' });
+    return;
   }
 
-  res.status(201).json({ ok: true, id: info.lastInsertRowid, mailSent, mailReason });
+  res.status(201).json({ ok: true, id: info.lastInsertRowid, mailSent: true, mailReason: '' });
 });
 
 app.get('/api/requests', (_req, res) => {

@@ -49,7 +49,7 @@ const Navbar: React.FC = () => {
 
             <div className="flex items-center gap-4">
               <NavLink 
-                to="/admin" 
+                to="/tedris" 
                 className="flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-900 transition-colors"
               >
                 <LogIn size={18} />
@@ -99,11 +99,11 @@ const Navbar: React.FC = () => {
             
             <div className="pt-4 border-t border-slate-100 flex flex-col gap-3 px-4">
               <NavLink
-                to="/admin"
+                to="/tedris"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 py-2 text-slate-600 font-bold"
               >
-                <LogIn size={20} /> Admin Girişi
+                <LogIn size={20} /> Giriş
               </NavLink>
               <NavLink
                 to="/elaqe"
