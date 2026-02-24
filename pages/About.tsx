@@ -90,10 +90,10 @@ const AboutPage: React.FC = () => {
                     const iconMap: Record<string, any> = { ShieldCheck, Lightbulb, Globe, Target };
                     const ItemIcon = iconMap[item.icon] || ShieldCheck;
                     return (
-                    <div key={idx} className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 hover:border-primary-100 transition-all group">
+                    <div key={idx} className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 hover:border-primary-100 transition-all group min-w-0">
                        <ItemIcon className="text-primary-600 mb-6 group-hover:scale-110 transition-transform" size={32} />
-                       <h4 className="text-lg font-black text-slate-900 mb-2">{item.title}</h4>
-                       <p className="text-sm text-slate-500 font-medium leading-relaxed">{item.desc}</p>
+                       <h4 className="text-lg font-black text-slate-900 mb-2 [overflow-wrap:anywhere]">{item.title}</h4>
+                       <p className="text-sm text-slate-500 font-medium leading-relaxed [overflow-wrap:anywhere]">{item.desc}</p>
                     </div>
                  )})}
               </div>
