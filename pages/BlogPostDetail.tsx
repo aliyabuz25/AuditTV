@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, Share2, Quote as QuoteIcon } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Facebook, MessageCircle, Quote as QuoteIcon } from 'lucide-react';
 import { BlogPost, ContentBlock } from '../types';
 import { useSiteData } from '../site/SiteDataContext';
 
@@ -11,6 +11,32 @@ const BlogPostDetail: React.FC = () => {
   const BLOG_POSTS = sitemap.blog.posts;
   // Cast for compatibility with blocks
   const post = BLOG_POSTS.find(p => p.id === id) as unknown as BlogPost;
+  const pageUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const encodedUrl = encodeURIComponent(pageUrl);
+  const encodedTitle = encodeURIComponent(post?.title || '');
+  const shareTargets = [
+    {
+      key: 'facebook',
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+      label: 'Facebook-da paylaş',
+      icon: <Facebook size={18} />,
+      className: 'hover:bg-[#1877F2] hover:text-white',
+    },
+    {
+      key: 'x',
+      href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
+      label: 'X-də paylaş',
+      icon: <span className="text-sm font-black leading-none">X</span>,
+      className: 'hover:bg-slate-900 hover:text-white',
+    },
+    {
+      key: 'whatsapp',
+      href: `https://wa.me/?text=${encodeURIComponent(`${post?.title || ''} ${pageUrl}`.trim())}`,
+      label: 'WhatsApp-da paylaş',
+      icon: <MessageCircle size={18} />,
+      className: 'hover:bg-[#25D366] hover:text-white',
+    },
+  ];
 
   if (!post) return <div className="text-slate-900 p-20 text-center font-black">Məqalə tapılmadı</div>;
 
@@ -92,10 +118,18 @@ const BlogPostDetail: React.FC = () => {
              <div className="flex items-center gap-4">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paylaş:</span>
                 <div className="flex gap-3">
-                   {[1, 2, 3].map(i => (
-                      <button key={i} className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-primary-600 hover:text-white transition-all shadow-sm">
-                         <Share2 size={18} />
-                      </button>
+                   {shareTargets.map((item) => (
+                      <a
+                        key={item.key}
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={item.label}
+                        title={item.label}
+                        className={`w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 transition-all shadow-sm ${item.className}`}
+                      >
+                        {item.icon}
+                      </a>
                    ))}
                 </div>
              </div>
