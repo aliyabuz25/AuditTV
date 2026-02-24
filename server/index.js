@@ -720,6 +720,98 @@ async function sendSubmissionEmail(submission) {
   return { sent: false, reason: lastError || 'mail_failed' };
 }
 
+function formatStatusLabel(status) {
+  const normalized = asText(status).toLowerCase();
+  if (normalized === 'pending') return 'Gözləmədə';
+  if (normalized === 'approved') return 'Təsdiqləndi';
+  if (normalized === 'resolved') return 'Bağlandı';
+  if (normalized === 'rejected') return 'Rədd edildi';
+  return asText(status) || '-';
+}
+
+function getCourseTitleById(sitemap, courseId) {
+  const courses = Array.isArray(sitemap?.education?.courses) ? sitemap.education.courses : [];
+  const match = courses.find((course) => String(course?.id) === String(courseId || ''));
+  return asText(match?.title) || asText(courseId) || '-';
+}
+
+async function sendStatusUpdateEmail({
+  type,
+  recipientEmail,
+  fullName,
+  oldStatus,
+  newStatus,
+  courseTitle,
+  subject,
+}) {
+  const recipients = parseRecipientEmails(recipientEmail);
+  if (recipients.length === 0) {
+    return { sent: false, reason: 'recipient_email_missing' };
+  }
+
+  const { sitemap } = getStoredSitemap();
+  const smtp = getSmtpSettings(sitemap);
+  if (!smtp.host || !smtp.port || !smtp.username || !smtp.password || !smtp.fromEmail) {
+    return { sent: false, reason: 'smtp_not_configured' };
+  }
+
+  const submissionType = formatSubmissionType(type);
+  const statusTitle = `${submissionType} statusunuz yeniləndi`;
+  const changeTime = formatAzerbaijanDateTime();
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: smtp.host,
+      port: smtp.port,
+      secure: smtp.secure,
+      auth: {
+        user: smtp.username,
+        pass: smtp.password,
+      },
+    });
+
+    const fields = [
+      ['Növ', submissionType],
+      ['Ad', asText(fullName) || '-'],
+      ['Əvvəlki status', formatStatusLabel(oldStatus)],
+      ['Yeni status', formatStatusLabel(newStatus)],
+      ['Mövzu', asText(subject) || '-'],
+      ['Kurs', asText(courseTitle) || '-'],
+      ['Tarix', changeTime],
+    ];
+
+    const text = [
+      `Salam${asText(fullName) ? `, ${asText(fullName)}` : ''}!`,
+      `${submissionType} üzrə statusunuz yeniləndi.`,
+      `Əvvəlki status: ${formatStatusLabel(oldStatus)}`,
+      `Yeni status: ${formatStatusLabel(newStatus)}`,
+      asText(subject) ? `Mövzu: ${asText(subject)}` : '',
+      asText(courseTitle) ? `Kurs: ${asText(courseTitle)}` : '',
+      `Tarix: ${changeTime}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    await transporter.sendMail({
+      from: smtp.fromName ? `"${smtp.fromName}" <${smtp.fromEmail}>` : smtp.fromEmail,
+      to: recipients,
+      subject: `[audit.tv] ${statusTitle}`,
+      text,
+      html: createBrandedEmailHtml({
+        sitemap,
+        badge: 'Status Yeniləndi',
+        title: statusTitle,
+        intro: 'Müraciətiniz üzrə status dəyişdirildi. Yenilənmiş məlumatlar aşağıdadır.',
+        fields,
+      }),
+    });
+
+    return { sent: true };
+  } catch (err) {
+    return { sent: false, reason: err instanceof Error ? err.message : 'mail_failed' };
+  }
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -1128,14 +1220,35 @@ app.post('/api/course-requests', async (req, res) => {
   }
 });
 
-app.patch('/api/course-requests', (req, res) => {
+app.patch('/api/course-requests', async (req, res) => {
   const { email, courseId, status } = req.body || {};
   if (!email || !courseId || !status) {
     res.status(400).json({ error: 'email, courseId and status are required' });
     return;
   }
+
+  const current = db
+    .prepare('SELECT email, full_name as fullName, status FROM course_requests WHERE email = ? AND course_id = ?')
+    .get(email, courseId);
+  if (!current) {
+    res.status(404).json({ error: 'Request not found' });
+    return;
+  }
+
   db.prepare('UPDATE course_requests SET status = ? WHERE email = ? AND course_id = ?').run(status, email, courseId);
-  res.json({ ok: true });
+
+  const { sitemap } = getStoredSitemap();
+  const mail = await sendStatusUpdateEmail({
+    type: 'course',
+    recipientEmail: asText(current.email),
+    fullName: asText(current.fullName),
+    oldStatus: asText(current.status),
+    newStatus: asText(status),
+    courseTitle: getCourseTitleById(sitemap, courseId),
+    subject: 'Kurs giriş müraciəti',
+  });
+
+  res.json({ ok: true, mailSent: mail.sent, mailReason: mail.sent ? '' : mail.reason || 'mail_failed' });
 });
 
 app.delete('/api/course-requests', (req, res) => {
@@ -1252,11 +1365,19 @@ app.get('/api/requests', (_req, res) => {
   res.json({ requests });
 });
 
-app.patch('/api/submissions/:id', (req, res) => {
+app.patch('/api/submissions/:id', async (req, res) => {
   const id = Number(req.params.id);
   const status = asText(req.body?.status);
   if (!id || !status) {
     res.status(400).json({ error: 'id and status are required' });
+    return;
+  }
+
+  const current = db
+    .prepare('SELECT type, full_name as fullName, email, subject, status FROM form_submissions WHERE id = ?')
+    .get(id);
+  if (!current) {
+    res.status(404).json({ error: 'Submission not found' });
     return;
   }
 
@@ -1265,7 +1386,18 @@ app.patch('/api/submissions/:id', (req, res) => {
     res.status(404).json({ error: 'Submission not found' });
     return;
   }
-  res.json({ ok: true });
+
+  const mail = await sendStatusUpdateEmail({
+    type: asText(current.type),
+    recipientEmail: asText(current.email),
+    fullName: asText(current.fullName),
+    oldStatus: asText(current.status),
+    newStatus: status,
+    subject: asText(current.subject),
+    courseTitle: '',
+  });
+
+  res.json({ ok: true, mailSent: mail.sent, mailReason: mail.sent ? '' : mail.reason || 'mail_failed' });
 });
 
 app.delete('/api/submissions/:id', (req, res) => {
