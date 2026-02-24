@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Search, Clock, BookOpen, Filter } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
+import { formatBlogDate } from '../utils/blogDate';
 
 const BlogPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('HAMISI');
@@ -97,7 +98,7 @@ const BlogPage: React.FC = () => {
                   <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
                      <div className="flex items-center gap-2">
                         <Calendar size={14} className="text-primary-600" />
-                        <span>{post.date}</span>
+                        <span>{formatBlogDate(post.date, true)}</span>
                      </div>
                      <div className="flex items-center gap-2">
                         <Clock size={14} className="text-primary-600" />

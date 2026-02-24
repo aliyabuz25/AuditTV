@@ -1,9 +1,30 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, Facebook, MessageCircle, Quote as QuoteIcon } from 'lucide-react';
 import { BlogPost, ContentBlock } from '../types';
 import { useSiteData } from '../site/SiteDataContext';
+import { formatBlogDate } from '../utils/blogDate';
+
+const setMetaTag = (selector: string, attr: 'name' | 'property', key: string, content: string) => {
+  let meta = document.head.querySelector(selector) as HTMLMetaElement | null;
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute(attr, key);
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute('content', content);
+};
+
+const setCanonicalUrl = (url: string) => {
+  let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
+  }
+  canonical.setAttribute('href', url);
+};
 
 const BlogPostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +59,35 @@ const BlogPostDetail: React.FC = () => {
     },
   ];
 
+  useEffect(() => {
+    if (!post) return;
+
+    const siteName = sitemap.settings?.branding?.siteName || 'audit.tv';
+    const canonicalBase = (sitemap.settings?.seo?.canonicalUrl || '').replace(/\/$/, '');
+    const pageUrlForMeta = pageUrl || `${canonicalBase}/#/blog/${post.id}`;
+    const rawDescription =
+      post.excerpt ||
+      post.blocks?.find((b) => b.type === 'paragraph')?.content?.replace(/<[^>]+>/g, ' ') ||
+      '';
+    const description = String(rawDescription).replace(/\s+/g, ' ').trim().slice(0, 300);
+    const imageUrl = post.imageUrl?.startsWith('http')
+      ? post.imageUrl
+      : `${window.location.origin}${post.imageUrl || ''}`;
+
+    document.title = `${post.title} | ${siteName}`;
+    setCanonicalUrl(pageUrlForMeta);
+    setMetaTag('meta[name="description"]', 'name', 'description', description);
+    setMetaTag('meta[property="og:type"]', 'property', 'og:type', 'article');
+    setMetaTag('meta[property="og:title"]', 'property', 'og:title', post.title);
+    setMetaTag('meta[property="og:description"]', 'property', 'og:description', description);
+    setMetaTag('meta[property="og:url"]', 'property', 'og:url', pageUrlForMeta);
+    setMetaTag('meta[property="og:image"]', 'property', 'og:image', imageUrl);
+    setMetaTag('meta[name="twitter:card"]', 'name', 'twitter:card', 'summary_large_image');
+    setMetaTag('meta[name="twitter:title"]', 'name', 'twitter:title', post.title);
+    setMetaTag('meta[name="twitter:description"]', 'name', 'twitter:description', description);
+    setMetaTag('meta[name="twitter:image"]', 'name', 'twitter:image', imageUrl);
+  }, [post, pageUrl, sitemap.settings]);
+
   if (!post) return <div className="text-slate-900 p-20 text-center font-black">Məqalə tapılmadı</div>;
 
   return (
@@ -60,7 +110,7 @@ const BlogPostDetail: React.FC = () => {
           <div className="flex items-center justify-end border-y border-slate-100 py-8 mb-16">
              <div className="flex gap-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 <div className="flex items-center gap-2">
-                   <Calendar size={16} className="text-primary-600" /> {post.date}
+                   <Calendar size={16} className="text-primary-600" /> {formatBlogDate(post.date)}
                 </div>
                 <div className="flex items-center gap-2">
                    <Clock size={16} className="text-primary-600" /> 5 DƏQ

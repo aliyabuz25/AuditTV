@@ -19,6 +19,7 @@ import {
 import { BlogPost, ContentBlock, BlockType } from '../../types';
 import { useSiteData } from '../../site/SiteDataContext';
 import QuillEditor from '../../components/QuillEditor';
+import { formatBlogDate } from '../../utils/blogDate';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
@@ -209,7 +210,7 @@ const BlogManager: React.FC = () => {
             <div className="p-8">
               <h3 className="text-lg font-black text-slate-900 mb-6 line-clamp-2 h-[3rem]">{post.title}</h3>
               <div className="flex items-center justify-between pt-6 border-t border-slate-50">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{post.date}</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{formatBlogDate(post.date, true)}</span>
                 <div className="flex gap-2">
                   <button onClick={() => openEditModal(post)} className="p-3 bg-slate-50 text-slate-400 hover:bg-primary-50 hover:text-primary-600 rounded-xl">
                     <Edit3 size={18} />
