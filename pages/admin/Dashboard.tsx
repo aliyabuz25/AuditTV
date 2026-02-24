@@ -4,11 +4,28 @@ import {
   Save, Layout, Check, Plus, Trash2, 
   Download, Users, Lightbulb, 
   MessageSquare, Mail, Mic, FileText, Upload, BookOpen,
-  ShieldCheck, Calculator, PieChart, UserCheck, Briefcase, Cpu, TrendingUp, AlertCircle, FileCheck, Headphones, HelpCircle
+  ShieldCheck, Calculator, PieChart, UserCheck, Briefcase, Cpu, TrendingUp, AlertCircle, FileCheck, Headphones, HelpCircle,
+  Copy, ExternalLink, Loader2
 } from 'lucide-react';
 import { useSiteData } from '../../site/SiteDataContext';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const TOKEN_KEY = 'audit_admin_token';
+
+type UploadedPdf = {
+  name: string;
+  url: string;
+  absoluteUrl?: string;
+  size: number;
+  uploadedAt: string;
+};
+
+const humanFileSize = (bytes: number) => {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 KB';
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  return `${(kb / 1024).toFixed(2)} MB`;
+};
 
 const ICON_OPTIONS = [
   { key: 'Briefcase', Icon: Briefcase },
@@ -48,7 +65,14 @@ const Dashboard: React.FC = () => {
   const [saved, setSaved] = useState(false);
   const [uploadingGuide, setUploadingGuide] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfUploading, setPdfUploading] = useState(false);
+  const [pdfHistory, setPdfHistory] = useState<UploadedPdf[]>([]);
+  const [pdfHistoryLoading, setPdfHistoryLoading] = useState(false);
+  const [pdfError, setPdfError] = useState('');
+  const [pdfCopied, setPdfCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   const { sitemap, saveSitemap } = useSiteData();
 
   // --- CMS STATE ---
@@ -75,6 +99,31 @@ const Dashboard: React.FC = () => {
     setFacts(sitemap.home.facts);
     setFaqs(sitemap.faq.faqs);
   }, [sitemap]);
+
+  const latestPdf = pdfHistory[0];
+
+  const loadPdfHistory = async () => {
+    setPdfHistoryLoading(true);
+    try {
+      const token = localStorage.getItem(TOKEN_KEY) || '';
+      const response = await fetch(`${API_BASE}/api/uploads/pdfs`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!response.ok) {
+        throw new Error('PDF listəsi alınmadı.');
+      }
+      const payload = await response.json();
+      setPdfHistory(Array.isArray(payload.files) ? payload.files : []);
+    } catch (err) {
+      setPdfError(err instanceof Error ? err.message : 'PDF listəsi xətası');
+    } finally {
+      setPdfHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadPdfHistory();
+  }, []);
 
   // --- ACTIONS ---
   const handleSave = async () => {
@@ -120,6 +169,60 @@ const Dashboard: React.FC = () => {
   };
 
   const removeItem = (setter: any, index: number) => setter((prev: any) => prev.filter((_: any, i: number) => i !== index));
+
+  const onPickPdfFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0] || null;
+    setPdfError('');
+    if (!picked) {
+      setPdfFile(null);
+      return;
+    }
+    const isPdf = picked.type === 'application/pdf' || picked.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
+      setPdfFile(null);
+      setPdfError('Yalnız PDF faylı seçin (.pdf).');
+      return;
+    }
+    setPdfFile(picked);
+  };
+
+  const uploadPdf = async () => {
+    if (!pdfFile) {
+      setPdfError('PDF faylı seçilməyib.');
+      return;
+    }
+    setPdfUploading(true);
+    setPdfError('');
+    setPdfCopied(false);
+    try {
+      const token = localStorage.getItem(TOKEN_KEY) || '';
+      const formData = new FormData();
+      formData.append('file', pdfFile);
+      const response = await fetch(`${API_BASE}/api/upload`, {
+        method: 'POST',
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!response.ok) {
+        throw new Error('PDF yükləmə alınmadı.');
+      }
+      await response.json();
+      setPdfFile(null);
+      await loadPdfHistory();
+    } catch (err) {
+      setPdfError(err instanceof Error ? err.message : 'PDF yükləmə xətası');
+    } finally {
+      setPdfUploading(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = '';
+    }
+  };
+
+  const copyLatestPdfUrl = async () => {
+    if (!latestPdf?.url) return;
+    await navigator.clipboard.writeText(latestPdf.url);
+    setPdfCopied(true);
+    setTimeout(() => setPdfCopied(false), 1200);
+  };
 
   return (
     <div className="space-y-16 pb-32">
@@ -439,6 +542,71 @@ const Dashboard: React.FC = () => {
                + Yeni Sual Əlavə Et
             </button>
          </div>
+      </section>
+
+      {/* 7. PDF UPLOAD (MOVED FROM EXTRA TAB) */}
+      <section className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm space-y-8">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
+          <Upload size={18} className="text-primary-600" /> 7. PDF Yükləmə (Ana Səhifə)
+        </h3>
+
+        {pdfError ? <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 text-sm font-bold">{pdfError}</div> : null}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-200 space-y-4">
+            <label className="w-full block border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center bg-white cursor-pointer hover:border-primary-500 transition-colors">
+              <input ref={pdfInputRef} type="file" accept="application/pdf,.pdf" className="hidden" onChange={onPickPdfFile} />
+              <div className="flex flex-col items-center gap-3">
+                <FileText size={32} className="text-slate-500" />
+                <div className="text-sm font-black text-slate-700">{pdfFile ? pdfFile.name : 'PDF seçmək üçün klik et'}</div>
+                <div className="text-xs font-bold text-slate-400">Yalnız PDF faylı seçin (.pdf)</div>
+              </div>
+            </label>
+
+            <button
+              type="button"
+              onClick={() => void uploadPdf()}
+              disabled={pdfUploading || !pdfFile}
+              className="px-6 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-black text-sm uppercase tracking-widest disabled:opacity-60 flex items-center gap-2"
+            >
+              {pdfUploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+              {pdfUploading ? 'Yüklənir...' : 'PDF Yüklə'}
+            </button>
+          </div>
+
+          <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-200 space-y-4">
+            <h4 className="text-xs font-black uppercase tracking-widest text-slate-500">Son Yüklənən PDF</h4>
+            {pdfHistoryLoading ? (
+              <p className="text-sm font-bold text-slate-500">Yüklənən PDF-lər oxunur...</p>
+            ) : !latestPdf ? (
+              <p className="text-sm font-bold text-slate-500">Hələ PDF yüklənməyib.</p>
+            ) : (
+              <div className="border border-slate-200 rounded-2xl p-4 bg-white space-y-3">
+                <div className="text-sm font-black text-slate-900">{latestPdf.name}</div>
+                <div className="text-xs font-medium text-slate-500">Ölçü: {humanFileSize(latestPdf.size)}</div>
+                <div className="flex flex-wrap gap-2">
+                  <input readOnly value={latestPdf.url} className="flex-1 min-w-[220px] bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-700" />
+                  <button
+                    type="button"
+                    onClick={() => void copyLatestPdfUrl()}
+                    className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest flex items-center gap-2"
+                  >
+                    {pdfCopied ? <Check size={14} /> : <Copy size={14} />}
+                    {pdfCopied ? 'Kopyalandı' : 'URL Kopyala'}
+                  </button>
+                  <a
+                    href={latestPdf.absoluteUrl || latestPdf.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-widest flex items-center gap-2"
+                  >
+                    <ExternalLink size={14} /> Aç
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </section>
     </div>
   );
