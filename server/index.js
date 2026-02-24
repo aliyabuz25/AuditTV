@@ -551,6 +551,20 @@ function getSmtpSettings(sitemap) {
   };
 }
 
+function normalizeSmtpInput(input) {
+  const smtp = input && typeof input === 'object' ? input : {};
+  return {
+    host: asText(smtp.host),
+    port: Number(smtp.port || 0),
+    username: asText(smtp.username),
+    password: asText(smtp.password),
+    secure: Boolean(smtp.secure),
+    fromEmail: asText(smtp.fromEmail),
+    fromName: asText(smtp.fromName),
+    notifyEmails: asText(smtp.notifyEmails || smtp.notifyEmail),
+  };
+}
+
 function createMailHtml(submission, title) {
   const fields = [
     ['Növ', title],
@@ -812,6 +826,61 @@ app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
   db.prepare('DELETE FROM admin_sessions WHERE user_id = ?').run(userId);
   db.prepare('DELETE FROM admin_users WHERE id = ?').run(userId);
   res.json({ ok: true });
+});
+
+app.post('/api/admin/smtp-test', requireAdmin, async (req, res) => {
+  const fallback = getSmtpSettings(getStoredSitemap().sitemap);
+  const fromBody = normalizeSmtpInput(req.body?.smtp);
+  const smtp = {
+    host: fromBody.host || fallback.host,
+    port: fromBody.port || fallback.port,
+    username: fromBody.username || fallback.username,
+    password: fromBody.password || fallback.password,
+    secure: typeof req.body?.smtp?.secure === 'boolean' ? fromBody.secure : fallback.secure,
+    fromEmail: fromBody.fromEmail || fallback.fromEmail,
+    fromName: fromBody.fromName || fallback.fromName,
+    notifyEmails: fromBody.notifyEmails || fallback.notifyEmails,
+  };
+
+  if (!smtp.host || !smtp.port || !smtp.username || !smtp.password || !smtp.fromEmail) {
+    res.status(400).json({ error: 'SMTP ayarları tam deyil. Host, Port, Username, Password və From Email tələb olunur.' });
+    return;
+  }
+
+  const requestedTo = parseRecipientEmails(req.body?.to);
+  const recipients = requestedTo.length > 0 ? requestedTo : parseRecipientEmails(smtp.notifyEmails);
+  if (recipients.length === 0) {
+    res.status(400).json({ error: 'Test üçün ən azı bir alıcı email (TO) daxil edin.' });
+    return;
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: smtp.host,
+      port: smtp.port,
+      secure: smtp.secure,
+      auth: {
+        user: smtp.username,
+        pass: smtp.password,
+      },
+    });
+
+    await transporter.sendMail({
+      from: smtp.fromName ? `"${smtp.fromName}" <${smtp.fromEmail}>` : smtp.fromEmail,
+      to: recipients,
+      subject: '[audit.tv] SMTP Test Mail',
+      text: `SMTP test mail ugurla gonderildi.\nTarix: ${new Date().toISOString()}\nAlicilar: ${recipients.join(', ')}`,
+      html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a">
+        <h2 style="margin:0 0 12px 0">SMTP test mail ugurla gonderildi</h2>
+        <p style="margin:0 0 8px 0"><strong>Tarix:</strong> ${escapeHtml(new Date().toISOString())}</p>
+        <p style="margin:0"><strong>Alicilar:</strong> ${escapeHtml(recipients.join(', '))}</p>
+      </div>`,
+    });
+
+    res.json({ ok: true, to: recipients });
+  } catch (err) {
+    res.status(502).json({ error: err instanceof Error ? err.message : 'SMTP test ugursuz oldu' });
+  }
 });
 
 app.get('/api/sitemap', (_req, res) => {

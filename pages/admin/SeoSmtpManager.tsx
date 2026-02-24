@@ -16,6 +16,7 @@ import {
 import { useSiteData } from '../../site/SiteDataContext';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const TOKEN_KEY = 'audit_admin_token';
 
 const linksToText = (links: Array<{ label: string; path: string }>) =>
   links.map((l) => `${l.label}|${l.path}`).join('\n');
@@ -52,6 +53,9 @@ const normalizeNotifyEmails = (raw: string) => {
 const SeoSmtpManager: React.FC = () => {
   const { sitemap, saveSection } = useSiteData();
   const [saved, setSaved] = useState(false);
+  const [testingSmtp, setTestingSmtp] = useState(false);
+  const [smtpTestMessage, setSmtpTestMessage] = useState('');
+  const [smtpTestError, setSmtpTestError] = useState('');
   const [loadingUpload, setLoadingUpload] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [settings, setSettings] = useState(sitemap.settings);
@@ -99,6 +103,52 @@ const SeoSmtpManager: React.FC = () => {
       }
     } finally {
       setLoadingUpload(false);
+    }
+  };
+
+  const handleSmtpTest = async () => {
+    const token = localStorage.getItem(TOKEN_KEY) || '';
+    if (!token) {
+      setSmtpTestError('Admin sessiyası tapılmadı. Yenidən giriş edin.');
+      setSmtpTestMessage('');
+      return;
+    }
+
+    const normalizedNotifyEmails = normalizeNotifyEmails(settings.smtp.notifyEmails || '');
+    const smtpPayload = {
+      ...settings.smtp,
+      notifyEmails: normalizedNotifyEmails,
+    };
+
+    setTestingSmtp(true);
+    setSmtpTestError('');
+    setSmtpTestMessage('');
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/smtp-test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ smtp: smtpPayload }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setSmtpTestError(String(payload.error || 'SMTP test uğursuz oldu.'));
+        return;
+      }
+
+      const recipients = Array.isArray(payload.to) ? payload.to.join(', ') : normalizedNotifyEmails;
+      setSmtpTestMessage(`Test mail uğurla göndərildi: ${recipients}`);
+      setSettings((prev) => ({
+        ...prev,
+        smtp: {
+          ...prev.smtp,
+          notifyEmails: normalizedNotifyEmails,
+        },
+      }));
+    } finally {
+      setTestingSmtp(false);
     }
   };
 
@@ -194,6 +244,19 @@ const SeoSmtpManager: React.FC = () => {
           <input type="checkbox" checked={settings.smtp.secure} onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp, secure: e.target.checked } })} />
           Secure (TLS/SSL)
         </label>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSmtpTest}
+            disabled={testingSmtp}
+            className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-black uppercase tracking-widest disabled:opacity-60"
+          >
+            {testingSmtp ? 'Test Göndərilir...' : 'Test Mail Göndər'}
+          </button>
+          {smtpTestMessage ? <span className="text-xs font-bold text-emerald-700">{smtpTestMessage}</span> : null}
+          {smtpTestError ? <span className="text-xs font-bold text-rose-600">{smtpTestError}</span> : null}
+        </div>
       </section>
 
       <section className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
