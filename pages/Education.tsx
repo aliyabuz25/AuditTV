@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, BookOpen, Star, Clock, Users } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
+import ImageWithPlaceholder from '../components/ImageWithPlaceholder';
 
 const EducationPage: React.FC = () => {
   const [filter, setFilter] = useState('Hamısı');
@@ -74,7 +75,11 @@ const EducationPage: React.FC = () => {
             {filteredCourses.map(course => (
               <Link key={course.id} to={`/tedris/${course.id}`} className="group bg-white border border-slate-100 rounded-[2.5rem] overflow-hidden edu-card-shadow transition-all hover:-translate-y-2 flex flex-col">
                  <div className="aspect-video relative overflow-hidden">
-                    <img src={course.thumbnailUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
+                    <ImageWithPlaceholder
+                      src={course.thumbnailUrl}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      alt={course.title}
+                    />
                     <div className="absolute top-4 left-4">
                        <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-lg text-[10px] font-black text-slate-900 uppercase tracking-widest">{course.level}</span>
                     </div>

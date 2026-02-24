@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, Search, Clock, BookOpen, Filter } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 import { formatBlogDate } from '../utils/blogDate';
+import ImageWithPlaceholder from '../components/ImageWithPlaceholder';
 
 const BlogPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('HAMISI');
@@ -75,7 +76,7 @@ const BlogPage: React.FC = () => {
             {filteredPosts.map((post) => (
               <Link to={`/blog/${post.id}`} key={post.id} className="group flex flex-col h-full bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden edu-card-shadow transition-all duration-300 hover:-translate-y-2">
                 <div className="aspect-[16/10] overflow-hidden relative">
-                  <img 
+                  <ImageWithPlaceholder
                     src={post.imageUrl} 
                     alt={post.title} 
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 

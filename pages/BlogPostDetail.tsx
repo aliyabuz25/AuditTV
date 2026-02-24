@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar, Clock, Facebook, MessageCircle, Quote as QuoteIcon
 import { BlogPost, ContentBlock } from '../types';
 import { useSiteData } from '../site/SiteDataContext';
 import { formatBlogDate } from '../utils/blogDate';
+import ImageWithPlaceholder from '../components/ImageWithPlaceholder';
 
 const setMetaTag = (selector: string, attr: 'name' | 'property', key: string, content: string) => {
   let meta = document.head.querySelector(selector) as HTMLMetaElement | null;
@@ -144,7 +145,7 @@ const BlogPostDetail: React.FC = () => {
                        return (
                           <figure key={block.id} className="space-y-4">
                              <div className="rounded-[3.5rem] overflow-hidden shadow-2xl shadow-slate-200">
-                                <img src={block.imageUrl} className="w-full object-cover" alt={block.caption} />
+                                <ImageWithPlaceholder src={block.imageUrl} className="w-full object-cover" alt={block.caption || 'Blog görseli'} />
                              </div>
                              {block.caption && <figcaption className="text-center text-xs font-black text-slate-400 uppercase tracking-widest">{block.caption}</figcaption>}
                           </figure>

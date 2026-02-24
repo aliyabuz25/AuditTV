@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ShieldCheck, Calculator, Users, Briefcase, TrendingUp, FileText, ArrowRight, BookOpen, GraduationCap, PlayCircle, Star, Sparkles, Mic, Play, Clock, Download, FileCheck, HelpCircle, AlertCircle, Cpu, Mail, ChevronDown, Check, Video, List, Calendar, Headphones, PieChart, UserCheck } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 import { useToast } from '../components/ToastProvider';
+import ImageWithPlaceholder from '../components/ImageWithPlaceholder';
 
 const IconMap: any = {
   ShieldCheck, Calculator, Users, Briefcase, TrendingUp, FileText, AlertCircle, Cpu
@@ -239,7 +240,11 @@ const Home: React.FC = () => {
                  {featuredBlog ? (
                    <Link to={`/blog/${featuredBlog.id}`} className="group block bg-white rounded-[2.5rem] overflow-hidden edu-card-shadow border border-slate-100 h-full">
                       <div className="aspect-[21/10] overflow-hidden">
-                         <img src={featuredBlog.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="" />
+                         <ImageWithPlaceholder
+                           src={featuredBlog.imageUrl}
+                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+                           alt={featuredBlog.title}
+                         />
                       </div>
                       <div className="p-10">
                          <div className="flex items-center gap-3 mb-6">
@@ -265,7 +270,7 @@ const Home: React.FC = () => {
                  {sidebarBlogs.map(post => (
                    <Link key={post.id} to={`/blog/${post.id}`} className="group p-5 bg-white rounded-3xl border border-slate-100 hover:border-primary-100 hover:shadow-xl hover:shadow-primary-100/10 transition-all flex gap-5">
                       <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-slate-100">
-                         <img src={post.imageUrl} className="w-full h-full object-cover" alt="" />
+                         <ImageWithPlaceholder src={post.imageUrl} className="w-full h-full object-cover" alt={post.title} />
                       </div>
                       <div className="flex flex-col justify-center">
                          <span className="text-[10px] font-black text-primary-600 uppercase mb-1">{post.category}</span>
