@@ -641,7 +641,7 @@ function createBrandedEmailHtml({
       ([label, value]) => `
         <tr>
           <td class="field-row" style="padding:0 0 10px 0">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;border-collapse:separate;border-spacing:0;background:#ffffff">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="field-card" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;border-collapse:separate;border-spacing:0;background:#ffffff">
               <tr>
                 <td class="field-label" style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">
                   ${escapeHtml(label)}
@@ -664,10 +664,19 @@ function createBrandedEmailHtml({
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
     <title>${escapeHtml(siteName)} Mail</title>
     <style>
+      :root {
+        color-scheme: light dark;
+      }
       .mail-wrapper {
         padding: 28px 12px;
+      }
+      .mail-body {
+        background: #f1f5f9;
+        color: #0f172a;
       }
       .mail-shell {
         max-width: 680px;
@@ -676,14 +685,30 @@ function createBrandedEmailHtml({
         border-radius: 18px;
         overflow: hidden;
       }
+      .mail-badge {
+        color: #93c5fd;
+      }
       .mail-header {
         padding: 20px 24px;
+        color: #ffffff;
       }
       .mail-content {
         padding: 20px 24px 12px 24px;
+        background: #ffffff;
       }
       .mail-footer {
         padding: 12px 24px 24px 24px;
+        color: #64748b;
+      }
+      .field-card {
+        background: #ffffff;
+        border-color: #e2e8f0;
+      }
+      .field-label {
+        color: #64748b;
+      }
+      .field-value {
+        color: #0f172a;
       }
       .mail-title {
         margin: 8px 0 6px 0;
@@ -696,6 +721,74 @@ function createBrandedEmailHtml({
         color: #cbd5e1;
         font-size: 13px;
         line-height: 1.6;
+      }
+      @media (prefers-color-scheme: dark) {
+        .mail-body {
+          background: #0b1220 !important;
+          color: #e2e8f0 !important;
+        }
+        .mail-shell {
+          background: #111827 !important;
+          border-color: #334155 !important;
+        }
+        .mail-content {
+          background: #111827 !important;
+        }
+        .field-card {
+          background: #111827 !important;
+          border-color: #334155 !important;
+        }
+        .field-label {
+          background: #1e293b !important;
+          border-bottom-color: #334155 !important;
+          color: #cbd5e1 !important;
+        }
+        .field-value {
+          background: #0f172a !important;
+          color: #f8fafc !important;
+        }
+        .mail-footer {
+          color: #94a3b8 !important;
+        }
+        .mail-intro {
+          color: #dbeafe !important;
+        }
+        .mail-badge {
+          color: #bfdbfe !important;
+        }
+      }
+      [data-ogsc] .mail-body {
+        background: #0b1220 !important;
+        color: #e2e8f0 !important;
+      }
+      [data-ogsc] .mail-shell {
+        background: #111827 !important;
+        border-color: #334155 !important;
+      }
+      [data-ogsc] .mail-content {
+        background: #111827 !important;
+      }
+      [data-ogsc] .field-card {
+        background: #111827 !important;
+        border-color: #334155 !important;
+      }
+      [data-ogsc] .field-label {
+        background: #1e293b !important;
+        border-bottom-color: #334155 !important;
+        color: #cbd5e1 !important;
+      }
+      [data-ogsc] .field-value {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+      }
+      [data-ogsc] .mail-footer {
+        color: #94a3b8 !important;
+      }
+      [data-ogsc] .mail-intro {
+        color: #dbeafe !important;
+      }
+      [data-ogsc] .mail-badge {
+        color: #bfdbfe !important;
       }
       @media only screen and (max-width: 620px) {
         .mail-wrapper {
@@ -742,7 +835,7 @@ function createBrandedEmailHtml({
       }
     </style>
   </head>
-  <body style="margin:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a">
+  <body class="mail-body" style="margin:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mail-wrapper" style="padding:28px 12px">
       <tr>
         <td align="center">
@@ -753,7 +846,7 @@ function createBrandedEmailHtml({
                   <tr>
                     <td style="vertical-align:middle">
                       ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(siteName)}" class="brand-logo" style="max-height:42px;max-width:180px;width:auto;height:auto;display:block;margin-bottom:10px" />` : ''}
-                      <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93c5fd;font-weight:700">${escapeHtml(badge)}</div>
+                      <div class="mail-badge" style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93c5fd;font-weight:700">${escapeHtml(badge)}</div>
                       <h1 class="mail-title" style="margin:8px 0 6px 0;font-size:24px;line-height:1.25;color:#ffffff">${escapeHtml(title)}</h1>
                       <p class="mail-intro" style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.6">${escapeHtml(intro)}</p>
                     </td>
