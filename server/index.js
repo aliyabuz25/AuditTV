@@ -640,15 +640,15 @@ function createBrandedEmailHtml({
     .map(
       ([label, value]) => `
         <tr>
-          <td style="padding:0 0 10px 0">
+          <td class="field-row" style="padding:0 0 10px 0">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;border-collapse:separate;border-spacing:0;background:#ffffff">
               <tr>
-                <td style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">
+                <td class="field-label" style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#64748b;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">
                   ${escapeHtml(label)}
                 </td>
               </tr>
               <tr>
-                <td style="padding:12px;color:#0f172a;font-weight:500;font-size:14px;line-height:1.6;word-break:break-word;overflow-wrap:anywhere">
+                <td class="field-value" style="padding:12px;color:#0f172a;font-weight:500;font-size:14px;line-height:1.6;word-break:break-word;word-wrap:break-word;overflow-wrap:anywhere">
                   ${formatEmailFieldValue(value)}
                 </td>
               </tr>
@@ -665,35 +665,111 @@ function createBrandedEmailHtml({
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(siteName)} Mail</title>
+    <style>
+      .mail-wrapper {
+        padding: 28px 12px;
+      }
+      .mail-shell {
+        max-width: 680px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        overflow: hidden;
+      }
+      .mail-header {
+        padding: 20px 24px;
+      }
+      .mail-content {
+        padding: 20px 24px 12px 24px;
+      }
+      .mail-footer {
+        padding: 12px 24px 24px 24px;
+      }
+      .mail-title {
+        margin: 8px 0 6px 0;
+        font-size: 24px;
+        line-height: 1.25;
+        color: #ffffff;
+      }
+      .mail-intro {
+        margin: 0;
+        color: #cbd5e1;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      @media only screen and (max-width: 620px) {
+        .mail-wrapper {
+          padding: 14px 6px !important;
+        }
+        .mail-shell {
+          border-radius: 12px !important;
+        }
+        .mail-header {
+          padding: 16px !important;
+        }
+        .mail-content {
+          padding: 14px 14px 8px 14px !important;
+        }
+        .mail-footer {
+          padding: 8px 14px 16px 14px !important;
+          font-size: 11px !important;
+          line-height: 1.5 !important;
+        }
+        .mail-title {
+          font-size: 20px !important;
+          line-height: 1.35 !important;
+          margin: 8px 0 6px 0 !important;
+        }
+        .mail-intro {
+          font-size: 12px !important;
+          line-height: 1.55 !important;
+        }
+        .field-row {
+          padding: 0 0 8px 0 !important;
+        }
+        .field-label {
+          font-size: 10px !important;
+          line-height: 1.45 !important;
+        }
+        .field-value {
+          font-size: 13px !important;
+          line-height: 1.55 !important;
+        }
+        .brand-logo {
+          max-width: 140px !important;
+          height: auto !important;
+        }
+      }
+    </style>
   </head>
   <body style="margin:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:28px 12px">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mail-wrapper" style="padding:28px 12px">
       <tr>
         <td align="center">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:680px;background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="mail-shell" style="max-width:680px;background:#ffffff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden">
             <tr>
-              <td style="padding:20px 24px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#ffffff">
+              <td class="mail-header" style="padding:20px 24px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#ffffff">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                   <tr>
                     <td style="vertical-align:middle">
-                      ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(siteName)}" style="max-height:42px;display:block;margin-bottom:10px" />` : ''}
+                      ${logoUrl ? `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(siteName)}" class="brand-logo" style="max-height:42px;max-width:180px;width:auto;height:auto;display:block;margin-bottom:10px" />` : ''}
                       <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#93c5fd;font-weight:700">${escapeHtml(badge)}</div>
-                      <h1 style="margin:8px 0 6px 0;font-size:24px;line-height:1.25;color:#ffffff">${escapeHtml(title)}</h1>
-                      <p style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.6">${escapeHtml(intro)}</p>
+                      <h1 class="mail-title" style="margin:8px 0 6px 0;font-size:24px;line-height:1.25;color:#ffffff">${escapeHtml(title)}</h1>
+                      <p class="mail-intro" style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.6">${escapeHtml(intro)}</p>
                     </td>
                   </tr>
                 </table>
               </td>
             </tr>
             <tr>
-              <td style="padding:20px 24px 12px 24px">
+              <td class="mail-content" style="padding:20px 24px 12px 24px">
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:separate;border-spacing:0">
                   ${rowsHtml}
                 </table>
               </td>
             </tr>
             <tr>
-              <td style="padding:12px 24px 24px 24px;color:#64748b;font-size:12px;line-height:1.6">
+              <td class="mail-footer" style="padding:12px 24px 24px 24px;color:#64748b;font-size:12px;line-height:1.6">
                 Bu email ${escapeHtml(siteName)} platforması tərəfindən avtomatik yaradılıb.
               </td>
             </tr>
