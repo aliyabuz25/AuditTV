@@ -1,5 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Save, Check, Search, Mail, Globe, Upload, Image as ImageIcon, Shield } from 'lucide-react';
+import {
+  Save,
+  Check,
+  Search,
+  Mail,
+  Globe,
+  Upload,
+  Image as ImageIcon,
+  Linkedin,
+  Facebook,
+  Twitter,
+  AtSign,
+  ExternalLink,
+} from 'lucide-react';
 import { useSiteData } from '../../site/SiteDataContext';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
@@ -221,22 +234,81 @@ const SeoSmtpManager: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input value={settings.footer.socialLinks.linkedin} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, socialLinks: { ...settings.footer.socialLinks, linkedin: e.target.value } } })} placeholder="LinkedIn URL" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
-          <input value={settings.footer.socialLinks.facebook} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, socialLinks: { ...settings.footer.socialLinks, facebook: e.target.value } } })} placeholder="Facebook URL" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
-          <input value={settings.footer.socialLinks.twitter} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, socialLinks: { ...settings.footer.socialLinks, twitter: e.target.value } } })} placeholder="Twitter/X URL" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
-          <input value={settings.footer.socialLinks.email} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, socialLinks: { ...settings.footer.socialLinks, email: e.target.value } } })} placeholder="Mailto URL (mailto:...)" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
+        <div className="space-y-3">
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Sosial şəbəkə linkləri</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+              <Linkedin size={18} className="text-[#0A66C2]" />
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500 min-w-[84px]">LinkedIn</span>
+              <input
+                value={settings.footer.socialLinks.linkedin}
+                onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, socialLinks: { ...settings.footer.socialLinks, linkedin: e.target.value } } })}
+                placeholder="https://linkedin.com/company/..."
+                className="w-full bg-transparent outline-none text-sm font-medium text-slate-700 placeholder:text-slate-400"
+              />
+            </label>
+
+            <label className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+              <Facebook size={18} className="text-[#1877F2]" />
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500 min-w-[84px]">Facebook</span>
+              <input
+                value={settings.footer.socialLinks.facebook}
+                onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, socialLinks: { ...settings.footer.socialLinks, facebook: e.target.value } } })}
+                placeholder="https://facebook.com/..."
+                className="w-full bg-transparent outline-none text-sm font-medium text-slate-700 placeholder:text-slate-400"
+              />
+            </label>
+
+            <label className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+              <Twitter size={18} className="text-slate-700" />
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500 min-w-[84px]">X / Twitter</span>
+              <input
+                value={settings.footer.socialLinks.twitter}
+                onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, socialLinks: { ...settings.footer.socialLinks, twitter: e.target.value } } })}
+                placeholder="https://x.com/..."
+                className="w-full bg-transparent outline-none text-sm font-medium text-slate-700 placeholder:text-slate-400"
+              />
+            </label>
+
+            <label className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+              <AtSign size={18} className="text-primary-600" />
+              <span className="text-xs font-black uppercase tracking-wider text-slate-500 min-w-[84px]">E-mail</span>
+              <input
+                value={settings.footer.socialLinks.email}
+                onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, socialLinks: { ...settings.footer.socialLinks, email: e.target.value } } })}
+                placeholder="mailto:info@audit.tv"
+                className="w-full bg-transparent outline-none text-sm font-medium text-slate-700 placeholder:text-slate-400"
+              />
+            </label>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           <input value={settings.footer.copyrightText} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, copyrightText: e.target.value } })} placeholder="Copyright mətni" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
-          <div className="grid grid-cols-2 gap-3">
-            <input value={settings.footer.privacyLabel} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, privacyLabel: e.target.value } })} placeholder="Privacy label" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
-            <input value={settings.footer.privacyUrl} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, privacyUrl: e.target.value } })} placeholder="Privacy URL" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
+          <div className="space-y-3">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Hüquqi linklər</label>
+            <div className="grid grid-cols-2 gap-3">
+              <input value={settings.footer.privacyLabel} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, privacyLabel: e.target.value } })} placeholder="Məxfilik adı" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
+              <div className="relative">
+                <input value={settings.footer.privacyUrl} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, privacyUrl: e.target.value } })} placeholder="/mexfilik-siyaseti və ya tam URL" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-10 font-medium" />
+                {settings.footer.privacyUrl ? (
+                  <a href={settings.footer.privacyUrl} target="_blank" rel="noreferrer" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-600">
+                    <ExternalLink size={16} />
+                  </a>
+                ) : null}
+              </div>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3 md:col-start-2">
-            <input value={settings.footer.termsLabel} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, termsLabel: e.target.value } })} placeholder="Terms label" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
-            <input value={settings.footer.termsUrl} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, termsUrl: e.target.value } })} placeholder="Terms URL" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
+            <input value={settings.footer.termsLabel} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, termsLabel: e.target.value } })} placeholder="Şərtlər adı" className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium" />
+            <div className="relative">
+              <input value={settings.footer.termsUrl} onChange={(e) => setSettings({ ...settings, footer: { ...settings.footer, termsUrl: e.target.value } })} placeholder="/istifade-sertleri və ya tam URL" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-10 font-medium" />
+              {settings.footer.termsUrl ? (
+                <a href={settings.footer.termsUrl} target="_blank" rel="noreferrer" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-600">
+                  <ExternalLink size={16} />
+                </a>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>
