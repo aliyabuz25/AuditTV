@@ -4,12 +4,23 @@ import {
   Save, Plus, Trash2, BookOpen, Star, Layout, Check, 
   Edit3, X, Image as ImageIcon, Upload, Clock, 
   Users, ChevronDown, ChevronUp, Play, ListPlus, 
-  Target, Info, ArrowLeft, Search, GraduationCap
+  Target, Info, ArrowLeft, Search, GraduationCap,
+  CheckCircle, Shield, Link2, FileUp, ExternalLink
 } from 'lucide-react';
 import { Course, CourseModule, CoursePerk, CourseResource, Lesson } from '../../types';
 import { useSiteData } from '../../site/SiteDataContext';
 
 const PERK_ICON_OPTIONS: CoursePerk['iconName'][] = ['CheckCircle', 'Shield', 'Users', 'BookOpen', 'Star', 'Clock'];
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+
+const PERK_ICON_COMPONENTS: Record<CoursePerk['iconName'], React.ComponentType<{ size?: number; className?: string }>> = {
+  CheckCircle,
+  Shield,
+  Users,
+  BookOpen,
+  Star,
+  Clock,
+};
 
 const normalizePerks = (perks: Course['perks'] | undefined): CoursePerk[] => {
   const normalized = (perks || []).map((perk) => {
@@ -45,6 +56,7 @@ const EducationManager: React.FC = () => {
   const [saved, setSaved] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resourceInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // Page Header Settings (Matching the requested symmetry)
   const [pageHeader, setPageHeader] = useState(sitemap.education.pageHeader);
@@ -139,6 +151,28 @@ const EducationManager: React.FC = () => {
     if (!editingCourse) return;
     const next = [...normalizeResources(editingCourse.resources), { id: Math.random().toString(36).slice(2, 11), title: '', url: '' }];
     setEditingCourse({ ...editingCourse, resources: next });
+  };
+
+  const handleResourceFileUpload = async (resourceId: string, file: File | null) => {
+    if (!editingCourse || !file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const response = await fetch(`${API_BASE}/api/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) throw new Error('Upload failed');
+      const payload = await response.json();
+      const uploadedUrl = String(payload?.url || '');
+      if (!uploadedUrl) throw new Error('No URL');
+      const next = normalizeResources(editingCourse.resources).map((resource) =>
+        resource.id === resourceId ? { ...resource, url: uploadedUrl } : resource,
+      );
+      setEditingCourse({ ...editingCourse, resources: next });
+    } catch {
+      window.alert('Fayl yüklənərkən xəta baş verdi. Yenidən cəhd edin.');
+    }
   };
 
   return (
@@ -390,7 +424,13 @@ const EducationManager: React.FC = () => {
                         <div className="space-y-4">
                            {normalizePerks(editingCourse.perks).map((perk, idx) => (
                              <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-slate-50 p-3 rounded-2xl border border-transparent hover:border-slate-100">
-                               <div className="md:col-span-3">
+                               <div className="md:col-span-3 flex items-center gap-2">
+                                 <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-primary-600 shrink-0">
+                                   {(() => {
+                                     const IconPreview = PERK_ICON_COMPONENTS[perk.iconName];
+                                     return <IconPreview size={16} />;
+                                   })()}
+                                 </div>
                                  <select
                                    value={perk.iconName}
                                    onChange={(e) => {
@@ -455,7 +495,7 @@ const EducationManager: React.FC = () => {
                              </div>
                            ) : (
                              normalizeResources(editingCourse.resources).map((resource, idx) => (
-                               <div key={resource.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-slate-50 p-3 rounded-2xl border border-transparent hover:border-slate-100">
+                             <div key={resource.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-slate-50 p-3 rounded-2xl border border-transparent hover:border-slate-100">
                                  <div className="md:col-span-4">
                                    <input
                                      type="text"
@@ -469,7 +509,7 @@ const EducationManager: React.FC = () => {
                                      placeholder="Resurs adı (məs: PDF, Check-list)..."
                                    />
                                  </div>
-                                 <div className="md:col-span-7">
+                                 <div className="md:col-span-6">
                                    <input
                                      type="url"
                                      value={resource.url}
@@ -482,7 +522,41 @@ const EducationManager: React.FC = () => {
                                      placeholder="https://... və ya /uploads/..."
                                    />
                                  </div>
-                                 <div className="md:col-span-1 flex justify-end">
+                                 <div className="md:col-span-2 flex justify-end gap-2">
+                                   <input
+                                     ref={(el) => {
+                                       resourceInputRefs.current[resource.id] = el;
+                                     }}
+                                     type="file"
+                                     accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv"
+                                     className="hidden"
+                                     onChange={(e) => {
+                                       void handleResourceFileUpload(resource.id, e.target.files?.[0] || null);
+                                       e.currentTarget.value = '';
+                                     }}
+                                   />
+                                   <button
+                                     onClick={() => resourceInputRefs.current[resource.id]?.click()}
+                                     className="inline-flex items-center gap-1 px-3 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all"
+                                     title="Fayl Yüklə"
+                                   >
+                                     <FileUp size={12} /> Yüklə
+                                   </button>
+                                   {resource.url ? (
+                                     <a
+                                       href={resource.url}
+                                       target="_blank"
+                                       rel="noreferrer"
+                                       className="inline-flex items-center gap-1 px-3 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all"
+                                       title="Aç"
+                                     >
+                                       <ExternalLink size={12} /> Aç
+                                     </a>
+                                   ) : (
+                                     <span className="inline-flex items-center gap-1 px-3 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl bg-slate-100 text-slate-400">
+                                       <Link2 size={12} /> Link
+                                     </span>
+                                   )}
                                    <button
                                      onClick={() => {
                                        const next = normalizeResources(editingCourse.resources).filter((_, i) => i !== idx);
