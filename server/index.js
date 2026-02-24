@@ -285,6 +285,221 @@ function buildAbsoluteUrl(req, relativeUrl) {
   return `${protocol}://${host}${relativeUrl}`;
 }
 
+function toAbsoluteAssetUrl(req, value, fallback = '/uploads/default-blog.jpg') {
+  const raw = asText(value) || fallback;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('/')) return buildAbsoluteUrl(req, raw);
+  return buildAbsoluteUrl(req, `/${raw}`);
+}
+
+function normalizePublicPath(input) {
+  const rawInput = asText(input) || '/';
+  let raw = rawInput;
+  try {
+    raw = decodeURIComponent(rawInput);
+  } catch {
+    raw = rawInput;
+  }
+  let next = raw;
+
+  if (/^https?:\/\//i.test(next)) {
+    try {
+      next = new URL(next).pathname || '/';
+    } catch {
+      next = '/';
+    }
+  }
+
+  if (!next.startsWith('/')) next = `/${next}`;
+  next = next.split('#')[0].split('?')[0] || '/';
+  if (next.length > 1) next = next.replace(/\/+$/, '');
+  return next || '/';
+}
+
+function buildFrontendUrl(req, pagePath) {
+  const normalizedPath = normalizePublicPath(pagePath);
+  const hashPath = normalizedPath === '/' ? '/' : normalizedPath;
+  if (PUBLIC_BASE_URL) {
+    return `${PUBLIC_BASE_URL}/#${hashPath}`;
+  }
+  return buildAbsoluteUrl(req, `/#${hashPath}`);
+}
+
+function renderShareHtml({
+  lang = 'az',
+  siteName,
+  title,
+  description,
+  imageUrl,
+  shareUrl,
+  frontendUrl,
+  type = 'website',
+}) {
+  const safeSiteName = asText(siteName) || 'audit.tv';
+  const safeTitle = asText(title) || safeSiteName;
+  const safeDescription = asText(description) || safeSiteName;
+  const safeImage = asText(imageUrl);
+  const safeShareUrl = asText(shareUrl);
+  const safeFrontendUrl = asText(frontendUrl);
+
+  return `<!doctype html>
+<html lang="${escapeHtml(lang)}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${escapeHtml(safeTitle)} | ${escapeHtml(safeSiteName)}</title>
+    <meta name="description" content="${escapeHtml(safeDescription)}" />
+    <link rel="canonical" href="${escapeHtml(safeFrontendUrl)}" />
+    <meta property="og:type" content="${escapeHtml(type)}" />
+    <meta property="og:site_name" content="${escapeHtml(safeSiteName)}" />
+    <meta property="og:title" content="${escapeHtml(safeTitle)}" />
+    <meta property="og:description" content="${escapeHtml(safeDescription)}" />
+    <meta property="og:image" content="${escapeHtml(safeImage)}" />
+    <meta property="og:url" content="${escapeHtml(safeShareUrl)}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(safeTitle)}" />
+    <meta name="twitter:description" content="${escapeHtml(safeDescription)}" />
+    <meta name="twitter:image" content="${escapeHtml(safeImage)}" />
+    <meta http-equiv="refresh" content="0; url=${escapeHtml(safeFrontendUrl)}" />
+  </head>
+  <body>
+    <script>window.location.replace(${JSON.stringify(safeFrontendUrl)});</script>
+  </body>
+</html>`;
+}
+
+function getShareMetaForPath(req, sitemap, pagePath) {
+  const siteName = asText(sitemap?.settings?.branding?.siteName) || 'audit.tv';
+  const defaultTitle = asText(sitemap?.settings?.seo?.title) || siteName;
+  const defaultDescription =
+    asText(sitemap?.settings?.seo?.description) ||
+    asText(sitemap?.home?.hero?.sub) ||
+    `${siteName} platforması`;
+  const fallbackImage =
+    asText(sitemap?.settings?.branding?.logoUrl) ||
+    asText(sitemap?.about?.hero?.imageUrl) ||
+    asText(sitemap?.blog?.posts?.[0]?.imageUrl) ||
+    '/uploads/default-blog.jpg';
+
+  const normalizedPath = normalizePublicPath(pagePath);
+  const blogPosts = Array.isArray(sitemap?.blog?.posts) ? sitemap.blog.posts : [];
+  const courses = Array.isArray(sitemap?.education?.courses) ? sitemap.education.courses : [];
+  const podcastEpisodes = Array.isArray(sitemap?.podcast?.episodes) ? sitemap.podcast.episodes : [];
+
+  const output = {
+    type: 'website',
+    title: defaultTitle,
+    description: defaultDescription.slice(0, 300),
+    imageUrl: toAbsoluteAssetUrl(req, fallbackImage),
+    frontendPath: normalizedPath,
+  };
+
+  if (normalizedPath === '/') {
+    output.title = asText(sitemap?.home?.hero?.title) || defaultTitle;
+    output.description = (asText(sitemap?.home?.hero?.sub) || defaultDescription).slice(0, 300);
+    return output;
+  }
+
+  if (normalizedPath === '/haqqimizda') {
+    const heroTitle = `${asText(sitemap?.about?.hero?.title)} ${asText(sitemap?.about?.hero?.spanTitle)}`.trim();
+    output.title = heroTitle || 'Haqqımızda';
+    output.description = (asText(sitemap?.about?.hero?.sub) || defaultDescription).slice(0, 300);
+    output.imageUrl = toAbsoluteAssetUrl(req, sitemap?.about?.hero?.imageUrl || fallbackImage);
+    return output;
+  }
+
+  if (normalizedPath === '/blog') {
+    output.title = asText(sitemap?.blog?.pageHeader?.title) || 'Blog';
+    output.description = (asText(sitemap?.blog?.pageHeader?.sub) || defaultDescription).slice(0, 300);
+    output.imageUrl = toAbsoluteAssetUrl(req, blogPosts[0]?.imageUrl || fallbackImage);
+    return output;
+  }
+
+  if (normalizedPath === '/podcast') {
+    output.title = asText(sitemap?.podcast?.pageHeader?.title) || 'Podcast';
+    output.description = (asText(sitemap?.podcast?.pageHeader?.description) || defaultDescription).slice(0, 300);
+    output.imageUrl = toAbsoluteAssetUrl(req, podcastEpisodes[0]?.thumbnailUrl || fallbackImage);
+    return output;
+  }
+
+  if (normalizedPath === '/tedris') {
+    output.title = asText(sitemap?.education?.pageHeader?.title) || 'Tədris';
+    output.description = (asText(sitemap?.education?.pageHeader?.sub) || defaultDescription).slice(0, 300);
+    output.imageUrl = toAbsoluteAssetUrl(req, courses[0]?.thumbnailUrl || fallbackImage);
+    return output;
+  }
+
+  if (normalizedPath === '/elaqe') {
+    output.title = asText(sitemap?.contact?.pageTitle) || 'Əlaqə';
+    output.description = (asText(sitemap?.contact?.pageDescription) || defaultDescription).slice(0, 300);
+    return output;
+  }
+
+  if (normalizedPath === '/mexfilik-siyaseti') {
+    output.title = 'Məxfilik Siyasəti';
+    output.description = `${siteName} platformasında məlumatların məxfiliyi və emalı qaydaları.`;
+    return output;
+  }
+
+  if (normalizedPath === '/istifade-sertleri') {
+    output.title = 'İstifadə Şərtləri';
+    output.description = `${siteName} platformasının istifadəsi üçün hüquq və öhdəlik şərtləri.`;
+    return output;
+  }
+
+  const blogMatch = normalizedPath.match(/^\/blog\/([^/]+)$/);
+  if (blogMatch) {
+    const blogId = decodeURIComponent(blogMatch[1]);
+    const post = blogPosts.find((item) => String(item.id) === String(blogId));
+    if (post) {
+      const paragraphBlock = Array.isArray(post.blocks)
+        ? post.blocks.find((block) => String(block.type) === 'paragraph' && asText(block.content))
+        : null;
+      const blockDesc = asText(paragraphBlock?.content)
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      output.type = 'article';
+      output.title = asText(post.title) || 'Blog';
+      output.description = (blockDesc || asText(post.excerpt) || defaultDescription).slice(0, 300);
+      output.imageUrl = toAbsoluteAssetUrl(req, post.imageUrl || fallbackImage);
+      return output;
+    }
+  }
+
+  const courseDetailMatch = normalizedPath.match(/^\/tedris\/([^/]+)(?:\/player)?$/);
+  if (courseDetailMatch) {
+    const courseId = decodeURIComponent(courseDetailMatch[1]);
+    const course = courses.find((item) => String(item.id) === String(courseId));
+    if (course) {
+      output.title = asText(course.title) || 'Kurs';
+      output.description = (asText(course.description) || defaultDescription).slice(0, 300);
+      output.imageUrl = toAbsoluteAssetUrl(req, course.thumbnailUrl || fallbackImage);
+      output.frontendPath = normalizedPath;
+      return output;
+    }
+  }
+
+  return output;
+}
+
+function sendSharePreview(res, meta, req) {
+  const frontendUrl = buildFrontendUrl(req, meta.frontendPath || '/');
+  const shareUrl = buildAbsoluteUrl(req, req.originalUrl || '/api/share/page');
+  const html = renderShareHtml({
+    siteName: meta.siteName,
+    title: meta.title,
+    description: meta.description,
+    imageUrl: meta.imageUrl,
+    shareUrl,
+    frontendUrl,
+    type: meta.type,
+  });
+
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
+}
+
 function formatSubmissionType(type) {
   if (type === 'course') return 'Kurs müraciəti';
   if (type === 'contact') return 'Əlaqə formu';
@@ -617,46 +832,24 @@ app.get('/api/share/blog/:id', (req, res) => {
     return;
   }
 
-  const siteName = asText(sitemap?.settings?.branding?.siteName) || 'audit.tv';
-  const pageTitle = asText(post.title) || 'Blog';
-  const fallbackDesc = asText(post.excerpt);
-  const paragraphBlock = Array.isArray(post.blocks)
-    ? post.blocks.find((b) => String(b.type) === 'paragraph' && asText(b.content))
-    : null;
-  const blockDesc = asText(paragraphBlock?.content).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-  const description = (blockDesc || fallbackDesc || `${siteName} blog yazısı`).slice(0, 300);
-  const imageUrlRaw = asText(post.imageUrl);
-  const imageUrl = /^https?:\/\//i.test(imageUrlRaw) ? imageUrlRaw : buildAbsoluteUrl(req, imageUrlRaw || '/uploads/default-blog.jpg');
-  const frontendUrl = PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL}/#/blog/${encodeURIComponent(postId)}` : buildAbsoluteUrl(req, `/#/blog/${encodeURIComponent(postId)}`);
-  const shareUrl = buildAbsoluteUrl(req, `/api/share/blog/${encodeURIComponent(postId)}`);
+  const meta = getShareMetaForPath(req, sitemap, `/blog/${postId}`);
+  sendSharePreview(res, { ...meta, siteName: asText(sitemap?.settings?.branding?.siteName) || 'audit.tv' }, req);
+});
 
-  const html = `<!doctype html>
-<html lang="az">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${escapeHtml(pageTitle)} | ${escapeHtml(siteName)}</title>
-    <meta name="description" content="${escapeHtml(description)}" />
-    <link rel="canonical" href="${escapeHtml(frontendUrl)}" />
-    <meta property="og:type" content="article" />
-    <meta property="og:site_name" content="${escapeHtml(siteName)}" />
-    <meta property="og:title" content="${escapeHtml(pageTitle)}" />
-    <meta property="og:description" content="${escapeHtml(description)}" />
-    <meta property="og:image" content="${escapeHtml(imageUrl)}" />
-    <meta property="og:url" content="${escapeHtml(shareUrl)}" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
-    <meta name="twitter:description" content="${escapeHtml(description)}" />
-    <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
-    <meta http-equiv="refresh" content="0; url=${escapeHtml(frontendUrl)}" />
-  </head>
-  <body>
-    <script>window.location.replace(${JSON.stringify(frontendUrl)});</script>
-  </body>
-</html>`;
+app.get('/api/share/page', (req, res) => {
+  const { sitemap } = getStoredSitemap();
+  const pathParam = normalizePublicPath(
+    asText(req.query.path) || asText(req.query.url) || '/',
+  );
+  const meta = getShareMetaForPath(req, sitemap, pathParam);
+  sendSharePreview(res, { ...meta, siteName: asText(sitemap?.settings?.branding?.siteName) || 'audit.tv' }, req);
+});
 
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(html);
+app.get('/api/share/page/*', (req, res) => {
+  const { sitemap } = getStoredSitemap();
+  const wildcardPath = `/${asText(req.params[0])}`;
+  const meta = getShareMetaForPath(req, sitemap, wildcardPath);
+  sendSharePreview(res, { ...meta, siteName: asText(sitemap?.settings?.branding?.siteName) || 'audit.tv' }, req);
 });
 
 app.get('/api/uploads/pdfs', requireAdmin, (req, res) => {
