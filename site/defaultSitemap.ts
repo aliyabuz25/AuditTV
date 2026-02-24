@@ -65,6 +65,7 @@ export type Sitemap = {
       title: string;
       spanTitle: string;
       sub: string;
+      imageUrl: string;
       stat1Year: string;
       stat1Label: string;
       stat2Val: string;
@@ -254,6 +255,7 @@ export const defaultSitemap: Sitemap = {
       title: 'Maliyyənin',
       spanTitle: 'Rəqəmsal Səsi',
       sub: 'Biz sadəcə audit şirkəti deyilik. audit.tv — Azərbaycanın maliyyə ekosistemini bilik, innovasiya və şəffaflıqla gücləndirən hibrid platformadır.',
+      imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1000',
       stat1Year: '2015',
       stat1Label: 'Yaranma ili',
       stat2Val: '100+',

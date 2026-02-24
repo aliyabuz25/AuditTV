@@ -6,6 +6,7 @@ import { useSiteData } from '../site/SiteDataContext';
 const AboutPage: React.FC = () => {
   const { sitemap } = useSiteData();
   const { about } = sitemap;
+  const heroImageUrl = about.hero.imageUrl || 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1000';
 
   return (
     <div className="bg-white min-h-screen">
@@ -53,7 +54,7 @@ const AboutPage: React.FC = () => {
              
              <div className="relative">
                 <div className="aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl relative z-10">
-                   <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1000" className="w-full h-full object-cover" alt="Team working" />
+                   <img src={heroImageUrl} className="w-full h-full object-cover" alt="Team working" />
                 </div>
                 {/* Decorative elements */}
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-100 rounded-full blur-3xl opacity-60"></div>

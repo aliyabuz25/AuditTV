@@ -1,12 +1,14 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   Save, Check, Plus, Trash2, Award, Layout, Target, Users, 
   Lightbulb, Briefcase, ShieldCheck, Globe, Rocket, Zap, 
   CheckCircle2, Cpu, Shield, UserCheck, BarChart3,
-  MessageSquare, HelpCircle
+  MessageSquare, HelpCircle, Upload, Image as ImageIcon
 } from 'lucide-react';
 import { useSiteData } from '../../site/SiteDataContext';
+
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
 const ICON_OPTIONS = [
   { key: 'ShieldCheck', Icon: ShieldCheck },
@@ -44,7 +46,9 @@ const IconPicker = ({ current, onSelect }: { current: string, onSelect: (key: st
 
 const AboutManager: React.FC = () => {
   const [saved, setSaved] = useState(false);
+  const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const { sitemap, saveSection } = useSiteData();
+  const heroImageInputRef = useRef<HTMLInputElement>(null);
 
   // --- CMS STATE ---
   
@@ -90,6 +94,25 @@ const AboutManager: React.FC = () => {
 
   const removeItem = (setter: any, index: number) => setter((prev: any) => prev.filter((_: any, i: number) => i !== index));
 
+  const uploadHeroImage = async (file: File) => {
+    setUploadingHeroImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch(`${API_BASE}/api/upload-image`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!response.ok) return;
+      const payload = await response.json();
+      if (payload.url) {
+        setHero((prev: any) => ({ ...prev, imageUrl: payload.url }));
+      }
+    } finally {
+      setUploadingHeroImage(false);
+    }
+  };
+
   return (
     <div className="space-y-16 pb-32">
       <header className="flex justify-between items-center sticky top-0 z-[60] bg-slate-50/80 backdrop-blur-xl py-5 border-b border-slate-200 -mx-10 px-10">
@@ -124,6 +147,39 @@ const AboutManager: React.FC = () => {
           <div>
             <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3">Alt Yazı</label>
             <textarea rows={3} value={hero.sub} onChange={e => setHero({...hero, sub: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-600 font-medium leading-relaxed outline-none" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+             <div className="space-y-3">
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Hero Şəkli URL</label>
+                <input
+                  type="text"
+                  value={hero.imageUrl || ''}
+                  onChange={e => setHero({ ...hero, imageUrl: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3 text-sm font-medium text-slate-700"
+                  placeholder="/uploads/... və ya https://..."
+                />
+             </div>
+             <div className="space-y-3">
+                <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest">Şəkli Yüklə</label>
+                <button
+                  onClick={() => heroImageInputRef.current?.click()}
+                  disabled={uploadingHeroImage}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-5 py-3 text-sm font-black text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {uploadingHeroImage ? <Upload size={16} className="animate-pulse" /> : <ImageIcon size={16} />}
+                  {uploadingHeroImage ? 'Yüklənir...' : 'Hero Şəkli Yüklə'}
+                </button>
+                <input
+                  ref={heroImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void uploadHeroImage(file);
+                  }}
+                />
+             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
              {[
