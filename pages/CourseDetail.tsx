@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Star, Clock, Users, CheckCircle, ChevronDown, ChevronUp, Play, Lock, X, Mail, Shield, AlertCircle, Clock3, UserPlus, LogIn, Key, BookOpen } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 import { useToast } from '../components/ToastProvider';
@@ -9,6 +9,7 @@ import { CoursePerk } from '../types';
 const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { sitemap } = useSiteData();
   const toast = useToast();
   const COURSES = sitemap.education.courses;
@@ -52,6 +53,14 @@ const CourseDetail: React.FC = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    const authMode = String(searchParams.get('auth') || '').toLowerCase();
+    if (authMode === 'login' || authMode === 'register') {
+      setActiveTab(authMode === 'register' ? 'register' : 'login');
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
+
   const checkAccessStatus = async (userEmail: string) => {
     // Tural Rahim master access
     if (userEmail === 'tural.rahim99@gmail.com') {
@@ -77,6 +86,15 @@ const CourseDetail: React.FC = () => {
     } else {
       setError('');
       setIsModalOpen(true);
+    }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    if (searchParams.has('auth')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('auth');
+      setSearchParams(next, { replace: true });
     }
   };
 
@@ -299,7 +317,7 @@ const CourseDetail: React.FC = () => {
                {/* Modal Header with Tabs */}
                <div className="bg-slate-50 border-b border-slate-100 px-2 pt-2">
                   <div className="flex justify-end pr-2 pt-2">
-                    <button onClick={() => setIsModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-900">
+                    <button onClick={closeModal} className="p-1 text-slate-400 hover:text-slate-900">
                        <X size={20} />
                     </button>
                   </div>
