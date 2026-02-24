@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Check, Copy, ExternalLink, FileText, Loader2, Upload } from 'lucide-react';
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
@@ -25,12 +25,37 @@ const PdfUploadManager: React.FC = () => {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState<UploadedPdf[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   const latest = history[0];
   const acceptText = useMemo(() => 'Yalnız PDF faylı seçin (.pdf)', []);
 
   const isPdf = (candidate: File) =>
     candidate.type === 'application/pdf' || candidate.name.toLowerCase().endsWith('.pdf');
+
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const token = localStorage.getItem(TOKEN_KEY) || '';
+      const response = await fetch(`${API_BASE}/api/uploads/pdfs`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(String(body.error || 'PDF listəsi alınmadı.'));
+      }
+      const payload = await response.json();
+      setHistory(Array.isArray(payload.files) ? payload.files : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'PDF listəsi xətası');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadHistory();
+  }, []);
 
   const onPickFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const picked = event.target.files?.[0] || null;
@@ -77,16 +102,8 @@ const PdfUploadManager: React.FC = () => {
         throw new Error(String(body.error || 'PDF yükləmə alınmadı.'));
       }
 
-      const payload = await response.json();
-      const next: UploadedPdf = {
-        name: String(payload.filename || file.name),
-        url: String(payload.url || ''),
-        absoluteUrl: String(payload.absoluteUrl || ''),
-        size: Number(payload.size || file.size || 0),
-        uploadedAt: new Date().toISOString(),
-      };
-
-      setHistory((prev) => [next, ...prev].slice(0, 8));
+      await response.json();
+      await loadHistory();
       setFile(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'PDF yükləmə xətası');
@@ -145,7 +162,9 @@ const PdfUploadManager: React.FC = () => {
           <FileText size={14} className="text-primary-600" /> Son Yüklənən PDF
         </h3>
 
-        {!latest ? (
+        {historyLoading ? (
+          <div className="text-sm font-bold text-slate-500">Yüklənən PDF-lər oxunur...</div>
+        ) : !latest ? (
           <div className="text-sm font-bold text-slate-500">Hələ PDF yüklənməyib.</div>
         ) : (
           <div className="border border-slate-200 rounded-2xl p-4 space-y-3 bg-slate-50">

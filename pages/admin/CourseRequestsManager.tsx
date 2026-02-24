@@ -101,31 +101,64 @@ const CourseRequestsManager: React.FC = () => {
   );
 
   const handleExportExcel = () => {
-    const rows = filteredRequests.map((req) => ({
-      Nov: req.type,
+    const toTypeLabel = (type: RequestType) => {
+      if (type === 'course') return 'KURS';
+      if (type === 'contact') return 'ELAQE';
+      return 'NEWSLETTER';
+    };
+
+    const toStatusLabel = (status: string) => {
+      if (status === 'approved') return 'APPROVED';
+      if (status === 'resolved') return 'RESOLVED';
+      if (status === 'rejected') return 'REJECTED';
+      return 'PENDING';
+    };
+
+    const reportDate = new Date();
+    const rows = filteredRequests.map((req, index) => ({
+      No: index + 1,
+      Nov: toTypeLabel(req.type),
       'Ad Soyad': req.fullName || '',
       Email: req.email || '',
       Telefon: req.phone || '',
       Kurs: req.courseId ? getCourseTitle(String(req.courseId || '')) : '',
       Movzu: req.subject || '',
       Mesaj: req.message || '',
-      Status: req.status || '',
+      Status: toStatusLabel(req.status || ''),
       Tarix: req.timestamp || '',
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ['AUDIT.TV - MURACIETLER HESABATI'],
+      [`Tarix: ${reportDate.toLocaleDateString('az-AZ')} ${reportDate.toLocaleTimeString('az-AZ')}`],
+      [`Toplam qeyd: ${rows.length}`],
+      [],
+    ]);
+    XLSX.utils.sheet_add_json(worksheet, rows, { origin: 'A5', skipHeader: false });
+
+    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
+    worksheet['!autofilter'] = { ref: `A5:J${Math.max(rows.length + 5, 6)}` };
     worksheet['!cols'] = [
+      { wch: 6 },
       { wch: 12 },
       { wch: 24 },
       { wch: 28 },
       { wch: 18 },
-      { wch: 28 },
-      { wch: 28 },
+      { wch: 30 },
+      { wch: 30 },
       { wch: 48 },
       { wch: 14 },
       { wch: 24 },
     ];
+
     const workbook = XLSX.utils.book_new();
+    workbook.Props = {
+      Title: 'AUDIT.TV Muracietler Hesabati',
+      Subject: 'Muracietlerin export fayli',
+      Author: 'AUDIT.TV Admin Panel',
+      Company: 'AUDIT.TV',
+      CreatedDate: reportDate,
+    };
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Muracietler');
     XLSX.writeFile(workbook, `muracietler-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };

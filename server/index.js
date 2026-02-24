@@ -589,6 +589,31 @@ app.post('/api/upload', uploadAny.single('file'), (req, res) => {
   });
 });
 
+app.get('/api/uploads/pdfs', requireAdmin, (req, res) => {
+  try {
+    const files = fs
+      .readdirSync(UPLOADS_DIR, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && path.extname(entry.name).toLowerCase() === '.pdf')
+      .map((entry) => {
+        const absolutePath = path.join(UPLOADS_DIR, entry.name);
+        const stat = fs.statSync(absolutePath);
+        const relativeUrl = `/uploads/${entry.name}`;
+        return {
+          name: entry.name,
+          url: relativeUrl,
+          absoluteUrl: buildAbsoluteUrl(req, relativeUrl),
+          size: stat.size,
+          uploadedAt: stat.mtime.toISOString(),
+        };
+      })
+      .sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt)));
+
+    res.json({ files });
+  } catch {
+    res.status(500).json({ error: 'PDF listəsi oxunmadı' });
+  }
+});
+
 app.get('/api/course-requests', (_req, res) => {
   const rows = db
     .prepare(
