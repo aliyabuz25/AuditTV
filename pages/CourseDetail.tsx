@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Star, Clock, Users, CheckCircle, ChevronDown, ChevronUp, Play, Lock, X, Mail, Shield, AlertCircle, Clock3, UserPlus, LogIn, Key } from 'lucide-react';
+import { Star, Clock, Users, CheckCircle, ChevronDown, ChevronUp, Play, Lock, X, Mail, Shield, AlertCircle, Clock3, UserPlus, LogIn, Key, BookOpen } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 import { useToast } from '../components/ToastProvider';
+import { CoursePerk } from '../types';
 
 const CourseDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,24 @@ const CourseDetail: React.FC = () => {
   const toast = useToast();
   const COURSES = sitemap.education.courses;
   const course = COURSES.find(c => c.id === id);
+  const normalizedPerks: CoursePerk[] = (course?.perks || []).map((perk) => {
+    if (typeof perk === 'string') {
+      return { text: perk, iconName: 'CheckCircle' };
+    }
+    return {
+      text: perk?.text || '',
+      iconName: perk?.iconName || 'CheckCircle',
+    };
+  }).filter((perk) => perk.text);
+
+  const perkIcons = {
+    CheckCircle,
+    Shield,
+    Users,
+    BookOpen,
+    Star,
+    Clock,
+  } as const;
   
   const [openModule, setOpenModule] = useState<string | null>(course?.modules[0]?.id || null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -250,15 +269,20 @@ const CourseDetail: React.FC = () => {
                        </div>
                     </div>
                     <div className="p-4 space-y-4">
-                       <div className="flex items-center gap-3 text-slate-900 font-bold">
-                          <CheckCircle className="text-primary-600" size={20} /> Ömürlük Giriş
-                       </div>
-                       <div className="flex items-center gap-3 text-slate-900 font-bold">
-                          <Shield className="text-primary-600" size={20} /> Rəsmi Sertifikat
-                       </div>
-                       <div className="flex items-center gap-3 text-slate-900 font-bold">
-                          <Users className="text-primary-600" size={20} /> Mentor Dəstəyi
-                       </div>
+                       {normalizedPerks.length > 0 ? (
+                         normalizedPerks.map((perk, index) => {
+                           const Icon = perkIcons[perk.iconName] || CheckCircle;
+                           return (
+                             <div key={`${perk.text}-${index}`} className="flex items-center gap-3 text-slate-900 font-bold">
+                               <Icon className="text-primary-600" size={20} /> {perk.text}
+                             </div>
+                           );
+                         })
+                       ) : (
+                         <div className="flex items-center gap-3 text-slate-900 font-bold">
+                            <CheckCircle className="text-primary-600" size={20} /> Ömürlük Giriş
+                         </div>
+                       )}
                     </div>
                  </div>
               </div>

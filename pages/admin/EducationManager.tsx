@@ -6,8 +6,26 @@ import {
   Users, ChevronDown, ChevronUp, Play, ListPlus, 
   Target, Info, ArrowLeft, Search, GraduationCap
 } from 'lucide-react';
-import { Course, CourseModule, Lesson } from '../../types';
+import { Course, CourseModule, CoursePerk, Lesson } from '../../types';
 import { useSiteData } from '../../site/SiteDataContext';
+
+const PERK_ICON_OPTIONS: CoursePerk['iconName'][] = ['CheckCircle', 'Shield', 'Users', 'BookOpen', 'Star', 'Clock'];
+
+const normalizePerks = (perks: Course['perks'] | undefined): CoursePerk[] => {
+  const normalized = (perks || []).map((perk) => {
+    if (typeof perk === 'string') return { text: perk, iconName: 'CheckCircle' as const };
+    return {
+      text: String(perk?.text || ''),
+      iconName: (perk?.iconName || 'CheckCircle') as CoursePerk['iconName'],
+    };
+  });
+  if (normalized.length > 0) return normalized;
+  return [
+    { text: 'Ömürlük Giriş', iconName: 'CheckCircle' },
+    { text: 'Rəsmi Sertifikat', iconName: 'Shield' },
+    { text: 'Mentor Dəstəyi', iconName: 'Users' },
+  ];
+};
 
 const EducationManager: React.FC = () => {
   const { sitemap, saveSection } = useSiteData();
@@ -37,7 +55,7 @@ const EducationManager: React.FC = () => {
 
   const openEditModal = (course: Course | null = null) => {
     if (course) {
-      setEditingCourse({ ...course });
+      setEditingCourse({ ...course, perks: normalizePerks(course.perks) });
     } else {
       setEditingCourse({
         id: Date.now().toString(),
@@ -52,8 +70,9 @@ const EducationManager: React.FC = () => {
         longDescription: '',
         learningOutcomes: [],
         requirements: [],
+        perks: normalizePerks([]),
         studentCount: 0,
-        modules: []
+        modules: [],
       });
     }
     setIsModalOpen(true);
@@ -327,6 +346,71 @@ const EducationManager: React.FC = () => {
                                  </div>
                               ))}
                            </div>
+                        </div>
+                     </section>
+
+                     {/* C.2 PERKS (COURSE BENEFITS) */}
+                     <section className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                        <div className="flex justify-between items-center mb-8">
+                           <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                              <Star size={14} className="text-primary-600" /> Kurs Üstünlükləri (İkon + Mətn)
+                           </h4>
+                           <button
+                             onClick={() =>
+                               setEditingCourse({
+                                 ...editingCourse,
+                                 perks: [...normalizePerks(editingCourse.perks), { text: 'Yeni üstünlük', iconName: 'CheckCircle' }],
+                               })
+                             }
+                             className="p-2 bg-primary-50 text-primary-600 rounded-xl hover:bg-primary-600 hover:text-white transition-all"
+                           >
+                             <Plus size={16} />
+                           </button>
+                        </div>
+                        <div className="space-y-4">
+                           {normalizePerks(editingCourse.perks).map((perk, idx) => (
+                             <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-slate-50 p-3 rounded-2xl border border-transparent hover:border-slate-100">
+                               <div className="md:col-span-3">
+                                 <select
+                                   value={perk.iconName}
+                                   onChange={(e) => {
+                                     const next = normalizePerks(editingCourse.perks);
+                                     next[idx] = { ...next[idx], iconName: e.target.value as CoursePerk['iconName'] };
+                                     setEditingCourse({ ...editingCourse, perks: next });
+                                   }}
+                                   className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none"
+                                 >
+                                   {PERK_ICON_OPTIONS.map((icon) => (
+                                     <option key={icon} value={icon}>{icon}</option>
+                                   ))}
+                                 </select>
+                               </div>
+                               <div className="md:col-span-8">
+                                 <input
+                                   type="text"
+                                   value={perk.text}
+                                   onChange={(e) => {
+                                     const next = normalizePerks(editingCourse.perks);
+                                     next[idx] = { ...next[idx], text: e.target.value };
+                                     setEditingCourse({ ...editingCourse, perks: next });
+                                   }}
+                                   className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 outline-none"
+                                   placeholder="Üstünlük mətni..."
+                                 />
+                               </div>
+                               <div className="md:col-span-1 flex justify-end">
+                                 <button
+                                   onClick={() => {
+                                     const next = normalizePerks(editingCourse.perks).filter((_, i) => i !== idx);
+                                     setEditingCourse({ ...editingCourse, perks: next.length ? next : normalizePerks([]) });
+                                   }}
+                                   className="p-2 text-slate-300 hover:text-red-500 transition-all"
+                                 >
+                                   <Trash2 size={14} />
+                                 </button>
+                               </div>
+                             </div>
+                           ))}
                         </div>
                      </section>
 

@@ -28,7 +28,6 @@ import {
   Save,
   Shield,
   ShieldCheck,
-  Star,
   Target,
   Trash2,
   TrendingUp,
@@ -56,11 +55,11 @@ const SECTION_ORDER: Array<keyof Sitemap> = [
   'navLinks',
   'settings',
   'topics',
-  'financialFacts',
-  'testimonials',
   'services',
   'clients',
 ];
+
+const EXCLUDED_SECTION_KEYS = new Set(['financialFacts', 'testimonials']);
 
 const SECTION_META: Record<string, { label: string; Icon: LucideIcon }> = {
   home: { label: 'Ana Səhifə', Icon: Database },
@@ -73,8 +72,6 @@ const SECTION_META: Record<string, { label: string; Icon: LucideIcon }> = {
   navLinks: { label: 'Naviqasiya', Icon: Navigation },
   settings: { label: 'Sistem Ayarları', Icon: Database },
   topics: { label: 'Mövzular', Icon: Database },
-  financialFacts: { label: 'Maliyyə Faktları', Icon: BarChart3 },
-  testimonials: { label: 'Müştəri Rəyləri', Icon: Star },
   services: { label: 'Xidmətlər', Icon: Briefcase },
   clients: { label: 'Tərəfdaşlar', Icon: Building2 },
 };
@@ -231,7 +228,7 @@ const ContentManager: React.FC = () => {
   }, [sitemap]);
 
   const availableTabs = useMemo(() => {
-    const keys = Object.keys(draft) as Array<keyof Sitemap>;
+    const keys = (Object.keys(draft) as Array<keyof Sitemap>).filter((key) => !EXCLUDED_SECTION_KEYS.has(String(key)));
     const ordered = SECTION_ORDER.filter((key) => keys.includes(key));
     const rest = keys.filter((key) => !ordered.includes(key));
     return [...ordered, ...rest];

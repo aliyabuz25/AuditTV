@@ -28,7 +28,12 @@ export interface Course {
   requirements: string[];
   studentCount: number;
   modules: CourseModule[];
-  perks: string[];
+  perks: Array<string | CoursePerk>;
+}
+
+export interface CoursePerk {
+  text: string;
+  iconName: 'CheckCircle' | 'Shield' | 'Users' | 'BookOpen' | 'Star' | 'Clock';
 }
 
 export type BlockType = 'paragraph' | 'heading' | 'image' | 'quote' | 'list';
