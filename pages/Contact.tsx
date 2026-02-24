@@ -17,11 +17,12 @@ const ContactPage: React.FC = () => {
     const formData = new FormData(form);
     const fullName = String(formData.get('fullName') || '').trim();
     const email = String(formData.get('email') || '').trim();
+    const phone = String(formData.get('phone') || '').trim();
     const subject = String(formData.get('subject') || '').trim();
     const message = String(formData.get('message') || '').trim();
 
-    if (!fullName || !email || !message) {
-      toast.error('Ad, e-poçt və mesaj sahələri mütləqdir.');
+    if (!fullName || !email || !phone || !message) {
+      toast.error('Ad, e-poçt, GSM və mesaj sahələri mütləqdir.');
       return;
     }
 
@@ -33,6 +34,7 @@ const ContactPage: React.FC = () => {
           type: 'contact',
           fullName,
           email,
+          phone,
           subject,
           message,
         }),
@@ -154,6 +156,10 @@ const ContactPage: React.FC = () => {
                   <div>
                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">E-poçt Ünvanı</label>
                      <input name="email" required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder="email@nümunə.com" />
+                  </div>
+                  <div className="md:col-span-2">
+                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">GSM Nömrəsi</label>
+                     <input name="phone" required type="tel" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder="+994 50 123 45 67" />
                   </div>
                </div>
 
