@@ -124,10 +124,29 @@ export type Sitemap = {
     faqs: typeof FAQS;
   };
   contact: {
+    pageTitle: string;
+    pageDescription: string;
     address: string;
+    officeTitle: string;
+    officeSubtitle: string;
     phone: string;
+    callCenterTitle: string;
+    callCenterSubtitle: string;
     email: string;
+    emailTitle: string;
+    emailSubtitle: string;
+    socialTitle: string;
+    socialLinks: {
+      linkedin: string;
+      instagram: string;
+      facebook: string;
+    };
+    responseTitle: string;
     responseTime: string;
+    responseSuffix: string;
+    formTitle: string;
+    formDescription: string;
+    subjectOptions: string[];
   };
   settings: {
     seo: {
@@ -305,10 +324,35 @@ export const defaultSitemap: Sitemap = {
   },
   faq: { faqs: JSON.parse(JSON.stringify(FAQS)) },
   contact: {
+    pageTitle: 'Bizimlə Əlaqə',
+    pageDescription:
+      'Suallarınız, təklifləriniz və ya xidmət sorğularınız üçün bizə yazın. Komandamız operativ şəkildə geri dönüş edəcəkdir.',
     address: 'Bakı şəhəri, Nizami küçəsi 14',
+    officeTitle: 'Baş Ofis',
+    officeSubtitle: 'Səbail rayonu, AZ1000',
     phone: '+994 50 123 45 67',
+    callCenterTitle: 'Zəng Mərkəzi',
+    callCenterSubtitle: 'Bazar ertəsi - Cümə, 09:00 - 18:00',
     email: 'info@audit.tv',
+    emailTitle: 'Elektron Poçt',
+    emailSubtitle: 'Sürətli cavab üçün bizə yazın',
+    socialTitle: 'Sosial Şəbəkələr',
+    socialLinks: {
+      linkedin: 'https://linkedin.com',
+      instagram: 'https://instagram.com',
+      facebook: 'https://facebook.com',
+    },
+    responseTitle: 'Cavab vaxtı',
     responseTime: 'Biz adətən 1 saat ərzində müraciətlərə baxırıq.',
+    responseSuffix: 'Həftəsonu daxil olan müraciətlər növbəti iş günü cavablandırılır.',
+    formTitle: 'Bizə mesaj göndərin',
+    formDescription: 'Formu doldurun, komandamız sizinlə qısa müddətdə əlaqə saxlayacaq.',
+    subjectOptions: [
+      'Tədris proqramları haqqında sual',
+      'Audit xidməti sifarişi',
+      'Əməkdaşlıq təklifi',
+      'Digər',
+    ],
   },
   settings: {
     seo: {

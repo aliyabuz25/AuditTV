@@ -67,7 +67,7 @@ const SeoSmtpManager: React.FC = () => {
     <div className="space-y-10 pb-24">
       <header className="flex justify-between items-center sticky top-0 z-[60] bg-slate-50/80 backdrop-blur-xl py-5 border-b border-slate-200 -mx-10 px-10">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">SEO & SMTP Ayarları</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Footer Ayarları</h1>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Meta, mail və branding idarəetməsi</p>
         </div>
         <button onClick={handleSave} className="bg-primary-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm flex items-center gap-2 shadow-2xl shadow-primary-200 transition-all hover:scale-[1.02] active:scale-95">

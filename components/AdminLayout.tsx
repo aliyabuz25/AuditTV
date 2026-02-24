@@ -139,7 +139,7 @@ const AdminLayout: React.FC = () => {
 
           <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-4 mb-2">Sistem</div>
           <NavLink to="/admin/settings" className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}>
-            <Settings size={18} /> SEO və SMTP
+            <Settings size={18} /> Footer
           </NavLink>
           <NavLink to="/admin/requests" className={({isActive}) => `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}>
             <Inbox size={18} /> Müraciətlər

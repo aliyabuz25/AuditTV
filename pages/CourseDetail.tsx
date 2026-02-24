@@ -95,12 +95,12 @@ const CourseDetail: React.FC = () => {
         toast.success('Giriş uğurla tamamlandı.');
         navigate(`/tedris/${course.id}/player`);
       } else {
-        const message = 'Bu hesabla müraciət tapılmadı və ya hələ təsdiqlənməyib.';
+        const message = 'Sizin qeydiyyatınız mövcud deyil';
         setError(message);
         toast.error(message);
       }
     } else {
-      const message = 'Bu kurs üçün qeydiyyatınız tapılmadı. Zəhmət olmasa "Qeydiyyatdan keç" bölməsindən müraciət edin.';
+      const message = 'Sizin qeydiyyatınız mövcud deyil';
       setError(message);
       toast.error(message);
     }
@@ -155,6 +155,23 @@ const CourseDetail: React.FC = () => {
         setStatus('approved');
         toast.success('Giriş təsdiqlənib, yönləndirilirsiniz.');
         navigate(`/tedris/${course.id}/player`);
+      } else if (exists.status === 'rejected') {
+        const retryResponse = await fetch(`${API_BASE}/api/course-requests`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, courseId: id, status: 'pending' }),
+        });
+
+        if (!retryResponse.ok) {
+          const message = 'Müraciət yenilənərkən xəta baş verdi.';
+          setError(message);
+          toast.error(message);
+          return;
+        }
+
+        setStatus('pending');
+        setIsModalOpen(false);
+        toast.success('Müraciətiniz yenidən göndərildi. Admin təsdiqindən sonra giriş açılacaq.');
       } else {
         setStatus('pending');
         const message = 'Sizin artıq bu kurs üçün müraciətiniz var və gözləmədədir.';
@@ -331,7 +348,7 @@ const CourseDetail: React.FC = () => {
                     /* REGISTER / REQUEST FORM */
                     <form onSubmit={handleRegisterRequest} className="space-y-6">
                        <h3 className="text-2xl font-black text-slate-900 mb-2">Kurs Üçün Müraciət</h3>
-                       <p className="text-slate-400 text-xs font-medium mb-8 leading-relaxed">Ödənişli kursa giriş üçün müraciət göndərin.</p>
+                       <p className="text-slate-400 text-xs font-medium mb-8 leading-relaxed">Hesab yaradın və bu kurs üçün giriş müraciəti göndərin.</p>
                        
                        <div className="space-y-4">
                           <div className="relative">

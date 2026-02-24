@@ -31,16 +31,7 @@ const BlogPostDetail: React.FC = () => {
             {post.title}
           </h1>
           
-          <div className="flex items-center justify-between border-y border-slate-100 py-8 mb-16">
-             <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-[1.25rem] bg-slate-900 text-white flex items-center justify-center font-black text-xl">
-                   {post.author.charAt(0)}
-                </div>
-                <div>
-                   <p className="text-slate-900 font-black text-base">{post.author}</p>
-                   <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-0.5">Ekspert Auditor</p>
-                </div>
-             </div>
+          <div className="flex items-center justify-end border-y border-slate-100 py-8 mb-16">
              <div className="flex gap-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 <div className="flex items-center gap-2">
                    <Calendar size={16} className="text-primary-600" /> {post.date}
