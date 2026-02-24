@@ -61,6 +61,17 @@ db.exec(`
   )
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS podcast_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    episode_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    session_id TEXT,
+    user_agent TEXT,
+    created_at TEXT NOT NULL
+  )
+`);
+
 try {
   db.prepare('ALTER TABLE course_requests ADD COLUMN created_at TEXT').run();
 } catch {}
@@ -262,6 +273,41 @@ function saveSitemap(sitemap) {
 
 function asText(value) {
   return String(value || '').trim();
+}
+
+function parseDurationMinutes(duration) {
+  const raw = asText(duration);
+  if (!raw) return 0;
+  const hhmmss = raw.match(/^(\d+):(\d{1,2})(?::(\d{1,2}))?$/);
+  if (hhmmss) {
+    if (hhmmss[3] !== undefined) {
+      const h = Number(hhmmss[1] || 0);
+      const m = Number(hhmmss[2] || 0);
+      const s = Number(hhmmss[3] || 0);
+      return h * 60 + m + Math.round(s / 60);
+    }
+    const m = Number(hhmmss[1] || 0);
+    const s = Number(hhmmss[2] || 0);
+    return m + Math.round(s / 60);
+  }
+  const justNumber = raw.match(/(\d+)/);
+  return justNumber ? Number(justNumber[1]) : 0;
+}
+
+function resolveRangeStart(range) {
+  const now = new Date();
+  const key = asText(range).toLowerCase();
+  if (key === '7d') {
+    now.setDate(now.getDate() - 7);
+    return now.toISOString();
+  }
+  if (key === 'year') {
+    now.setMonth(0, 1);
+    now.setHours(0, 0, 0, 0);
+    return now.toISOString();
+  }
+  now.setDate(now.getDate() - 30);
+  return now.toISOString();
 }
 
 function escapeHtml(value) {
@@ -1363,6 +1409,89 @@ app.get('/api/requests', (_req, res) => {
     String(b.createdAt || '').localeCompare(String(a.createdAt || '')),
   );
   res.json({ requests });
+});
+
+app.post('/api/podcast-events', (req, res) => {
+  const episodeId = asText(req.body?.episodeId);
+  const eventType = asText(req.body?.eventType || 'play') || 'play';
+  const sessionId = asText(req.body?.sessionId);
+
+  if (!episodeId) {
+    res.status(400).json({ error: 'episodeId is required' });
+    return;
+  }
+
+  db.prepare(
+    'INSERT INTO podcast_events (episode_id, event_type, session_id, user_agent, created_at) VALUES (?, ?, ?, ?, ?)',
+  ).run(episodeId, eventType, sessionId, asText(req.headers['user-agent']), new Date().toISOString());
+
+  res.status(201).json({ ok: true });
+});
+
+app.get('/api/admin/podcast-analytics', requireAdmin, (req, res) => {
+  const range = asText(req.query.range || '30d') || '30d';
+  const rangeStart = resolveRangeStart(range);
+  const { sitemap } = getStoredSitemap();
+  const episodes = Array.isArray(sitemap?.podcast?.episodes) ? sitemap.podcast.episodes : [];
+
+  const totalEpisodes = episodes.length;
+  const totalMinutes = episodes.reduce((acc, ep) => acc + parseDurationMinutes(ep?.duration), 0);
+  const avgDuration = totalEpisodes ? Math.round(totalMinutes / totalEpisodes) : 0;
+  const uniqueHosts = new Set(episodes.map((ep) => asText(ep?.host)).filter(Boolean)).size;
+  const videoReady = episodes.filter((ep) => asText(ep?.videoUrl)).length;
+
+  const playRows = db
+    .prepare(
+      `SELECT episode_id as episodeId, COUNT(*) as plays
+       FROM podcast_events
+       WHERE event_type = 'play' AND created_at >= ?
+       GROUP BY episode_id`,
+    )
+    .all(rangeStart);
+
+  const playsByEpisode = new Map(playRows.map((row) => [String(row.episodeId), Number(row.plays || 0)]));
+  const totalPlays = playRows.reduce((sum, row) => sum + Number(row.plays || 0), 0);
+
+  const topEpisodes = episodes
+    .map((episode) => ({
+      ...episode,
+      plays: Number(playsByEpisode.get(String(episode.id)) || 0),
+      minutes: parseDurationMinutes(episode.duration),
+    }))
+    .filter((episode) => episode.plays > 0)
+    .sort((a, b) => b.plays - a.plays)
+    .slice(0, 10);
+
+  const hostMap = new Map();
+  topEpisodes.forEach((episode) => {
+    const host = asText(episode.host) || 'Naməlum';
+    hostMap.set(host, (hostMap.get(host) || 0) + Number(episode.plays || 0));
+  });
+
+  const hostDistribution = Array.from(hostMap.entries())
+    .map(([name, plays]) => ({
+      name,
+      plays,
+      percentage: totalPlays ? Math.round((Number(plays) / totalPlays) * 100) : 0,
+    }))
+    .sort((a, b) => b.plays - a.plays)
+    .slice(0, 8);
+
+  res.json({
+    ok: true,
+    range,
+    rangeStart,
+    totals: {
+      totalEpisodes,
+      totalMinutes,
+      avgDuration,
+      uniqueHosts,
+      videoReady,
+      totalPlays,
+    },
+    topEpisodes,
+    hostDistribution,
+  });
 });
 
 app.patch('/api/submissions/:id', async (req, res) => {

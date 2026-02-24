@@ -5,6 +5,7 @@ import CsPlayerEmbed, { getYouTubeVideoId } from '../components/CsPlayerEmbed';
 import ImageWithPlaceholder from '../components/ImageWithPlaceholder';
 
 const PodcastPage: React.FC = () => {
+  const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeEpisodeId, setActiveEpisodeId] = useState<string | null>(null);
   const { sitemap } = useSiteData();
@@ -17,6 +18,30 @@ const PodcastPage: React.FC = () => {
 
   const activeEpisode = PODCAST_EPISODES.find((ep) => ep.id === activeEpisodeId) || null;
   const activeYouTubeId = getYouTubeVideoId(activeEpisode?.videoUrl);
+
+  const trackPlay = async (episodeId: string) => {
+    if (!episodeId) return;
+    const key = 'audit_podcast_session_id';
+    let sessionId = localStorage.getItem(key) || '';
+    if (!sessionId) {
+      sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+      localStorage.setItem(key, sessionId);
+    }
+    try {
+      await fetch(`${API_BASE}/api/podcast-events`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ episodeId, eventType: 'play', sessionId }),
+      });
+    } catch {
+      // Analytics failure should never block playback UX.
+    }
+  };
+
+  const openEpisode = (episodeId: string) => {
+    setActiveEpisodeId(episodeId);
+    void trackPlay(episodeId);
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -60,7 +85,7 @@ const PodcastPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {filteredEpisodes.map(episode => (
             <div key={episode.id} className="group bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden hover:edu-card-shadow transition-all duration-300 flex flex-col">
-               <button className="aspect-video relative overflow-hidden text-left" onClick={() => setActiveEpisodeId(episode.id)}>
+               <button className="aspect-video relative overflow-hidden text-left" onClick={() => openEpisode(episode.id)}>
                   <ImageWithPlaceholder
                     src={episode.thumbnailUrl}
                     alt={episode.title}
@@ -89,7 +114,7 @@ const PodcastPage: React.FC = () => {
                   </p>
                   <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
                      <span className="text-xs font-bold text-slate-400">Host: {episode.host}</span>
-                     <button className="text-primary-600 font-black text-sm flex items-center gap-2" onClick={() => setActiveEpisodeId(episode.id)}>
+                     <button className="text-primary-600 font-black text-sm flex items-center gap-2" onClick={() => openEpisode(episode.id)}>
                         İndi Dinlə <Play size={14} fill="currentColor" />
                      </button>
                   </div>
