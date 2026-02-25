@@ -18,7 +18,14 @@ const Home: React.FC = () => {
   const featuredBlog = BLOG_POSTS[0] || null;
   const sidebarBlogs = BLOG_POSTS.slice(1, 5);
   const PODCAST_EPISODES = sitemap.podcast.episodes;
-  const FINANCIAL_FACTS = sitemap.financialFacts;
+  const homeFacts = Array.isArray(sitemap.home?.facts) ? sitemap.home.facts : [];
+  const topLevelFacts = Array.isArray(sitemap.financialFacts) ? sitemap.financialFacts : [];
+  const factsSource = homeFacts.length >= topLevelFacts.length && homeFacts.length > 0 ? homeFacts : topLevelFacts;
+  const FINANCIAL_FACTS = factsSource.map((fact: any, index: number) => ({
+    id: fact?.id ?? index + 1,
+    text: String(fact?.text || ''),
+    icon: String(fact?.icon || 'Lightbulb'),
+  }));
   const FAQS = sitemap.faq.faqs;
   const { home } = sitemap;
 
@@ -213,10 +220,10 @@ const Home: React.FC = () => {
                <p className="text-slate-500 font-medium">{home.headers.factsSub}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-               {FINANCIAL_FACTS.map(fact => {
-                  const Icon = IconMap[fact.icon];
+               {FINANCIAL_FACTS.map((fact, index) => {
+                  const Icon = IconMap[fact.icon] || Lightbulb;
                   return (
-                     <div key={fact.id} className="bg-white p-8 rounded-[2rem] edu-card-shadow border border-slate-100 relative group overflow-hidden">
+                     <div key={`${fact.id}-${index}`} className="bg-white p-8 rounded-[2rem] edu-card-shadow border border-slate-100 relative group overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                            <Icon size={80} />
                         </div>

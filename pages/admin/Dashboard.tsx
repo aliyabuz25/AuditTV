@@ -5,7 +5,7 @@ import {
   Download, Users, Lightbulb, 
   MessageSquare, Mail, Mic, FileText, Upload, BookOpen,
   ShieldCheck, Calculator, PieChart, UserCheck, Briefcase, Cpu, TrendingUp, AlertCircle, FileCheck, Headphones, HelpCircle,
-  Copy, ExternalLink, Loader2
+  Copy, ExternalLink, Loader2, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { useSiteData } from '../../site/SiteDataContext';
 
@@ -42,6 +42,8 @@ const ICON_OPTIONS = [
   { key: 'FileCheck', Icon: FileCheck }
 ];
 
+const ICON_BY_KEY = Object.fromEntries(ICON_OPTIONS.map((item) => [item.key, item.Icon])) as Record<string, React.ComponentType<{ size?: number; className?: string }>>;
+
 const IconPicker = ({ current, onSelect }: { current: string, onSelect: (key: string) => void }) => {
   return (
     <div className="grid grid-cols-6 gap-2 p-3 bg-white rounded-2xl border border-slate-200">
@@ -49,16 +51,40 @@ const IconPicker = ({ current, onSelect }: { current: string, onSelect: (key: st
         <button
           key={key}
           onClick={() => onSelect(key)}
-          className={`p-2.5 rounded-xl flex items-center justify-center transition-all ${
+          className={`p-3 rounded-xl flex items-center justify-center transition-all ${
             current === key ? 'bg-primary-600 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
           }`}
           title={key}
         >
-          <Icon size={18} />
+          <Icon size={22} />
         </button>
       ))}
     </div>
   );
+};
+
+type DashboardFact = {
+  text: string;
+  icon: string;
+};
+
+const normalizeDashboardFacts = (value: unknown): DashboardFact[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => {
+    const row = item && typeof item === 'object' ? (item as Record<string, unknown>) : {};
+    return {
+      text: String(row.text || ''),
+      icon: String(row.icon || 'Lightbulb'),
+    };
+  });
+};
+
+const resolveDashboardFacts = (data: { financialFacts?: unknown; home?: { facts?: unknown } }): DashboardFact[] => {
+  const fromTopLevel = normalizeDashboardFacts(data.financialFacts);
+  const fromHome = normalizeDashboardFacts(data.home?.facts);
+  if (fromTopLevel.length >= fromHome.length && fromTopLevel.length > 0) return fromTopLevel;
+  if (fromHome.length > 0) return fromHome;
+  return [{ text: '', icon: 'Lightbulb' }];
 };
 
 const Dashboard: React.FC = () => {
@@ -88,7 +114,7 @@ const Dashboard: React.FC = () => {
 
   const [targets, setTargets] = useState(sitemap.home.targets);
 
-  const [facts, setFacts] = useState(sitemap.home.facts);
+  const [facts, setFacts] = useState<DashboardFact[]>(resolveDashboardFacts(sitemap));
 
   useEffect(() => {
     setHero(sitemap.home.hero);
@@ -96,7 +122,7 @@ const Dashboard: React.FC = () => {
     setPodcastSection(sitemap.home.podcastSection);
     setHeaders(sitemap.home.headers);
     setTargets(sitemap.home.targets);
-    setFacts(sitemap.home.facts);
+    setFacts(resolveDashboardFacts(sitemap));
     setFaqs(sitemap.faq.faqs);
   }, [sitemap]);
 
@@ -127,9 +153,19 @@ const Dashboard: React.FC = () => {
 
   // --- ACTIONS ---
   const handleSave = async () => {
+    const normalizedFacts = facts.map((fact) => ({
+      text: String(fact.text || ''),
+      icon: String(fact.icon || 'Lightbulb'),
+    }));
+
     const next = {
       ...sitemap,
-      home: { ...sitemap.home, hero, benefit, podcastSection, headers, targets, facts },
+      financialFacts: normalizedFacts.map((fact, index) => ({
+        id: index + 1,
+        text: fact.text,
+        icon: fact.icon,
+      })),
+      home: { ...sitemap.home, hero, benefit, podcastSection, headers, targets, facts: normalizedFacts },
       faq: { ...sitemap.faq, faqs },
     };
     const ok = await saveSitemap(next);
@@ -169,6 +205,38 @@ const Dashboard: React.FC = () => {
   };
 
   const removeItem = (setter: any, index: number) => setter((prev: any) => prev.filter((_: any, i: number) => i !== index));
+
+  const addFact = () => setFacts((prev) => [...prev, { text: 'Yeni fakt...', icon: 'Lightbulb' }]);
+
+  const updateFactField = (index: number, field: keyof DashboardFact, value: string) => {
+    setFacts((prev) => prev.map((fact, i) => (i === index ? { ...fact, [field]: value } : fact)));
+  };
+
+  const removeFact = (index: number) => {
+    setFacts((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const duplicateFact = (index: number) => {
+    setFacts((prev) => {
+      const item = prev[index];
+      if (!item) return prev;
+      const clone = { ...item };
+      return [...prev.slice(0, index + 1), clone, ...prev.slice(index + 1)];
+    });
+  };
+
+  const moveFact = (index: number, direction: -1 | 1) => {
+    setFacts((prev) => {
+      const target = index + direction;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
 
   const onPickPdfFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked = e.target.files?.[0] || null;
@@ -482,20 +550,69 @@ const Dashboard: React.FC = () => {
                </div>
             </div>
             
+            <div className="mb-6 flex items-center justify-between">
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Fakt sayı: {facts.length}</p>
+              <p className="text-xs font-medium text-slate-400">Hər fakt üçün ikon, mətn və önizləmə</p>
+            </div>
             <div className="space-y-6">
-               {facts.map((f, idx) => (
-                  <div key={idx} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex flex-col lg:flex-row gap-10 items-start lg:items-center relative group">
-                     <button onClick={() => removeItem(setFacts, idx)} className="absolute top-6 right-6 text-slate-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all">
-                        <Trash2 size={20} />
-                     </button>
-                     <div className="w-full lg:w-72">
-                        <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 text-center">İkon</label>
-                        <IconPicker current={f.icon} onSelect={(key) => updateItem(setFacts, idx, 'icon', key)} />
-                     </div>
-                     <textarea value={f.text} onChange={e => updateItem(setFacts, idx, 'text', e.target.value)} className="flex-1 bg-white border border-slate-200 rounded-[2rem] px-8 py-6 font-bold text-slate-700 text-lg outline-none focus:border-primary-600 transition-all" rows={2} />
-                  </div>
-               ))}
-               <button onClick={() => setFacts([...facts, { text: 'Yeni fakt...', icon: 'Lightbulb' }])} className="w-full py-5 border-2 border-dashed border-slate-100 rounded-[2.5rem] text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:bg-slate-50 hover:border-slate-200 transition-all">
+               {facts.map((f, idx) => {
+                  const FactIcon = ICON_BY_KEY[f.icon] || Lightbulb;
+                  return (
+                    <div key={`${idx}-${f.icon}`} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 relative">
+                      <div className="flex items-center justify-between mb-6">
+                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Fakt #{idx + 1}</p>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => moveFact(idx, -1)} disabled={idx === 0} className="p-2 rounded-lg bg-white border border-slate-200 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed hover:text-slate-800">
+                            <ArrowUp size={16} />
+                          </button>
+                          <button onClick={() => moveFact(idx, 1)} disabled={idx === facts.length - 1} className="p-2 rounded-lg bg-white border border-slate-200 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed hover:text-slate-800">
+                            <ArrowDown size={16} />
+                          </button>
+                          <button onClick={() => duplicateFact(idx)} className="p-2 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-primary-600">
+                            <Copy size={16} />
+                          </button>
+                          <button onClick={() => removeFact(idx)} disabled={facts.length <= 1} className="p-2 rounded-lg bg-white border border-slate-200 text-slate-500 disabled:opacity-40 disabled:cursor-not-allowed hover:text-red-600">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                        <div className="xl:col-span-5 space-y-4">
+                          <div>
+                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">İkon seçimi</label>
+                            <IconPicker current={f.icon} onSelect={(key) => updateFactField(idx, 'icon', key)} />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">İkon adı</label>
+                            <select value={f.icon} onChange={(e) => updateFactField(idx, 'icon', e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-primary-600">
+                              {ICON_OPTIONS.map((opt) => (
+                                <option key={opt.key} value={opt.key}>{opt.key}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="xl:col-span-7 space-y-4">
+                          <div>
+                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Mətn</label>
+                            <textarea value={f.text} onChange={(e) => updateFactField(idx, 'text', e.target.value)} className="w-full bg-white border border-slate-200 rounded-2xl px-6 py-5 font-bold text-slate-700 text-base outline-none focus:border-primary-600 transition-all" rows={3} />
+                          </div>
+                          <div className="bg-white p-6 rounded-2xl border border-slate-100 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-3 opacity-5">
+                              <FactIcon size={82} />
+                            </div>
+                            <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center text-primary-600 mb-4">
+                              <FactIcon size={24} />
+                            </div>
+                            <p className="text-slate-700 font-bold leading-relaxed">{f.text || 'Fakt mətnini daxil edin...'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+               })}
+               <button onClick={addFact} className="w-full py-5 border-2 border-dashed border-slate-100 rounded-[2.5rem] text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:bg-slate-50 hover:border-slate-200 transition-all">
                   + Yeni Fakt Əlavə Et
                </button>
             </div>

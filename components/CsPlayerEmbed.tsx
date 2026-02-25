@@ -22,6 +22,18 @@ const CS_PLAYER_SCRIPT_URL = 'https://cdn.jsdelivr.net/gh/abtp2/csPlayer/src/csP
 let youtubeApiPromise: Promise<void> | null = null;
 let csPlayerAssetsPromise: Promise<void> | null = null;
 
+function applyCsPlayerBrandTheme(host: HTMLElement) {
+  const playerRoot = host.querySelector('.csPlayer');
+  if (!(playerRoot instanceof HTMLElement)) return;
+
+  playerRoot.style.setProperty('--startBtnBg', '#4f6be4');
+  playerRoot.style.setProperty('--sliderThumbColor', '#4f6be4');
+  playerRoot.style.setProperty('--sliderSeekTrackColor', '#4f6be4');
+  playerRoot.style.setProperty('--settingsInputIconColor', '#4f6be4');
+  playerRoot.style.setProperty('--settingsBg', '#0f172a');
+  playerRoot.style.setProperty('--settingsTextColor', '#e2e8f0');
+}
+
 function ensureScript(id: string, src: string): Promise<void> {
   if (typeof window === 'undefined' || typeof document === 'undefined') return Promise.resolve();
 
@@ -147,7 +159,10 @@ type CsPlayerEmbedProps = {
   autoplay?: boolean;
   className?: string;
   emptyMessage?: string;
+  strictYouTube?: boolean;
+  forceNative?: boolean;
   onEnded?: () => void;
+  onStateChange?: (state: string) => void;
 };
 
 const CsPlayerEmbed: React.FC<CsPlayerEmbedProps> = ({
@@ -156,7 +171,10 @@ const CsPlayerEmbed: React.FC<CsPlayerEmbedProps> = ({
   autoplay = false,
   className = 'w-full aspect-video',
   emptyMessage = 'Video tapilmadi.',
+  strictYouTube = false,
+  forceNative = false,
   onEnded,
+  onStateChange,
 }) => {
   const resolvedVideoUrl = useMemo(() => String(videoUrl || '').trim(), [videoUrl]);
   const resolvedVideoId = useMemo(() => videoId || getYouTubeVideoId(resolvedVideoUrl), [videoId, resolvedVideoUrl]);
@@ -173,6 +191,7 @@ const CsPlayerEmbed: React.FC<CsPlayerEmbedProps> = ({
     let cancelled = false;
     let statePollInterval: number | undefined;
     let endedEventSent = false;
+    let lastState = '';
 
     const initialize = async () => {
       try {
@@ -199,6 +218,7 @@ const CsPlayerEmbed: React.FC<CsPlayerEmbedProps> = ({
           theme: 'youtube',
           loop: false,
         });
+        applyCsPlayerBrandTheme(host);
 
         if (autoplay) {
           window.setTimeout(() => {
@@ -210,10 +230,14 @@ const CsPlayerEmbed: React.FC<CsPlayerEmbedProps> = ({
           }, 300);
         }
 
-        if (onEnded) {
+        if (onEnded || onStateChange) {
           statePollInterval = window.setInterval(() => {
             try {
               const state = api.getPlayerState(hostIdRef.current);
+              if (state !== lastState) {
+                lastState = state;
+                onStateChange?.(state);
+              }
               if (state === 'ended' && !endedEventSent) {
                 endedEventSent = true;
                 onEnded();
@@ -242,22 +266,18 @@ const CsPlayerEmbed: React.FC<CsPlayerEmbedProps> = ({
         // Ignore destroy failures during unmount.
       }
     };
-  }, [resolvedVideoId, autoplay, onEnded, csPlayerFailed]);
+  }, [resolvedVideoId, autoplay, onEnded, onStateChange, csPlayerFailed]);
 
-  if (resolvedVideoId && !csPlayerFailed) {
-    return (
-      <div className={className}>
-        <div id={hostIdRef.current} className="w-full h-full" />
-      </div>
-    );
-  }
-
-  if (resolvedVideoId && csPlayerFailed) {
+  if (resolvedVideoId && forceNative) {
     const params = new URLSearchParams({
       autoplay: autoplay ? '1' : '0',
+      controls: '0',
+      disablekb: '1',
+      fs: '0',
       rel: '0',
       modestbranding: '1',
       playsinline: '1',
+      iv_load_policy: '3',
     });
 
     return (
@@ -273,7 +293,40 @@ const CsPlayerEmbed: React.FC<CsPlayerEmbedProps> = ({
     );
   }
 
-  if (resolvedVideoUrl) {
+  if (resolvedVideoId && !csPlayerFailed) {
+    return (
+      <div className={className}>
+        <div id={hostIdRef.current} className="w-full h-full" />
+      </div>
+    );
+  }
+
+  if (resolvedVideoId && csPlayerFailed) {
+    const params = new URLSearchParams({
+      autoplay: autoplay ? '1' : '0',
+      controls: '0',
+      disablekb: '1',
+      fs: '0',
+      rel: '0',
+      modestbranding: '1',
+      playsinline: '1',
+      iv_load_policy: '3',
+    });
+
+    return (
+      <iframe
+        className={className}
+        src={`https://www.youtube.com/embed/${resolvedVideoId}?${params.toString()}`}
+        title="Video player"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+      />
+    );
+  }
+
+  if (resolvedVideoUrl && !strictYouTube) {
     return (
       <video className={className} controls autoPlay={autoplay} playsInline src={resolvedVideoUrl} preload="metadata" onEnded={onEnded} />
     );

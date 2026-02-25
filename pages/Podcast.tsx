@@ -112,8 +112,7 @@ const PodcastPage: React.FC = () => {
                   <p className="text-slate-500 text-sm font-medium line-clamp-2 mb-6 flex-1">
                     {episode.description}
                   </p>
-                  <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
-                     <span className="text-xs font-bold text-slate-400">Host: {episode.host}</span>
+                  <div className="pt-6 border-t border-slate-50 flex items-center justify-end">
                      <button className="text-primary-600 font-black text-sm flex items-center gap-2" onClick={() => openEpisode(episode.id)}>
                         İndi Dinlə <Play size={14} fill="currentColor" />
                      </button>
@@ -130,7 +129,6 @@ const PodcastPage: React.FC = () => {
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-black text-slate-900">{activeEpisode.title}</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Host: {activeEpisode.host}</p>
               </div>
               <button onClick={() => setActiveEpisodeId(null)} className="p-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900">
                 <X size={18} />

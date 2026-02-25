@@ -147,7 +147,31 @@ export type Sitemap = {
     responseSuffix: string;
     formTitle: string;
     formDescription: string;
+    formFields: {
+      fullNameLabel: string;
+      fullNamePlaceholder: string;
+      emailLabel: string;
+      emailPlaceholder: string;
+      phoneLabel: string;
+      phonePlaceholder: string;
+      subjectLabel: string;
+      messageLabel: string;
+      messagePlaceholder: string;
+      submitButtonText: string;
+    };
     subjectOptions: string[];
+  };
+  privacyPolicy: {
+    title: string;
+    updatedAt: string;
+    intro: string;
+    sections: Array<{ title: string; content: string }>;
+  };
+  termsOfUse: {
+    title: string;
+    updatedAt: string;
+    intro: string;
+    sections: Array<{ title: string; content: string }>;
   };
   settings: {
     seo: {
@@ -248,7 +272,7 @@ export const defaultSitemap: Sitemap = {
       { title: 'Maliyyəçilər', desc: 'Data analitikasını, büdcə planlamasını və hesabatlılıq sistemlərini təkmilləşdirmək üçün.', icon: 'PieChart' },
       { title: 'Tələbələr', desc: 'Karyera yolunda ilk addımlarını praktiki biliklərlə və real keyslərlə atmaq üçün.', icon: 'UserCheck' },
     ],
-    facts: [{ text: 'Bilirsinizmi? 2024-cü ildə kiçik bizneslərdə vergi yoxlamalarının 40%-i sadə sənəd xətalarına görə baş verib.', icon: 'AlertCircle' }],
+    facts: JSON.parse(JSON.stringify(FINANCIAL_FACTS.map(({ text, icon }) => ({ text, icon })))),
   },
   about: {
     hero: {
@@ -350,11 +374,99 @@ export const defaultSitemap: Sitemap = {
     responseSuffix: 'Həftəsonu daxil olan müraciətlər növbəti iş günü cavablandırılır.',
     formTitle: 'Bizə mesaj göndərin',
     formDescription: 'Formu doldurun, komandamız sizinlə qısa müddətdə əlaqə saxlayacaq.',
+    formFields: {
+      fullNameLabel: 'Tam Adınız',
+      fullNamePlaceholder: 'Məsələn: Orxan Əliyev',
+      emailLabel: 'E-poçt Ünvanı',
+      emailPlaceholder: 'email@nümunə.com',
+      phoneLabel: 'GSM Nömrəsi',
+      phonePlaceholder: '+994 50 123 45 67',
+      subjectLabel: 'Mövzu',
+      messageLabel: 'Mesajınız',
+      messagePlaceholder: 'Burada ətraflı məlumat yaza bilərsiniz...',
+      submitButtonText: 'Göndər',
+    },
     subjectOptions: [
       'Tədris proqramları haqqında sual',
       'Audit xidməti sifarişi',
       'Əməkdaşlıq təklifi',
       'Digər',
+    ],
+  },
+  privacyPolicy: {
+    title: 'Məxfilik Siyasəti',
+    updatedAt: '24 Fevral 2026',
+    intro:
+      'Bu səhifədə audit.tv platformasında şəxsi məlumatların toplanması, istifadəsi və qorunması prinsipləri izah olunur.',
+    sections: [
+      {
+        title: 'Toplanan məlumatlar',
+        content:
+          'audit.tv platforması istifadəçi sorğularının idarə olunması, tədris xidmətlərinin təqdim edilməsi və kommunikasiya məqsədləri üçün ad, e-poçt ünvanı, telefon nömrəsi, müraciət məzmunu və texniki giriş məlumatlarını toplaya bilər.',
+      },
+      {
+        title: 'Məlumatların istifadə məqsədi',
+        content:
+          'Toplanan məlumatlar yalnız xidmətin təmin edilməsi, istifadəçi dəstəyi, təhlükəsizlik nəzarəti, hüquqi öhdəliklərin yerinə yetirilməsi və platformanın inkişafı məqsədilə emal olunur.',
+      },
+      {
+        title: 'Məlumatların paylaşılması',
+        content:
+          'Şəxsi məlumatlar qanunvericiliklə tələb edilən hallar istisna olmaqla üçüncü şəxslərə satılmır və icazəsiz şəkildə ötürülmür. Texniki infrastruktur və xidmət təminatı məqsədilə yalnız zəruri həcmdə tərəfdaş sistemlərdən istifadə edilə bilər.',
+      },
+      {
+        title: 'Saxlama müddəti və təhlükəsizlik',
+        content:
+          'Məlumatlar yalnız xidmət məqsədləri üçün lazım olan müddətdə saxlanılır. audit.tv məlumatların təhlükəsizliyini təmin etmək üçün texniki və inzibati tədbirlər tətbiq edir.',
+      },
+      {
+        title: 'İstifadəçi hüquqları',
+        content:
+          'İstifadəçilər öz şəxsi məlumatlarının yenilənməsi, düzəldilməsi və ya silinməsi barədə sorğu göndərə bilərlər. Sorğular əlaqə kanalları vasitəsilə qəbul edilir və mümkün ən qısa müddətdə cavablandırılır.',
+      },
+      {
+        title: 'Dəyişikliklər',
+        content:
+          'Bu siyasət zaman-zaman yenilənə bilər. Yenilənmiş mətn platformada dərc edildiyi andan etibarən qüvvəyə minir.',
+      },
+    ],
+  },
+  termsOfUse: {
+    title: 'İstifadə Şərtləri',
+    updatedAt: '24 Fevral 2026',
+    intro:
+      'Bu səhifə platformadan istifadə zamanı hüquq və öhdəlikləri tənzimləyən əsas qaydaları ehtiva edir.',
+    sections: [
+      {
+        title: 'Ümumi müddəalar',
+        content:
+          'audit.tv platformasından istifadə etməklə bu şərtlərlə razı olduğunuzu təsdiq edirsiniz. Şərtlərlə razı olmadığınız halda platformadan istifadə etməməyiniz tövsiyə olunur.',
+      },
+      {
+        title: 'Xidmətə çıxış və hesab məsuliyyəti',
+        content:
+          'Tədris məzmununa çıxış kurs əsaslı təsdiq mexanizmi ilə təmin olunur. Hesab məlumatlarının məxfiliyinə istifadəçi cavabdehdir. İcazəsiz istifadə hallarında platforma çıxışı məhdudlaşdıra bilər.',
+      },
+      {
+        title: 'İntellektual mülkiyyət hüquqları',
+        content:
+          'Saytda yerləşdirilən məzmun, o cümlədən mətn, video, qrafik materiallar və sənədlər audit.tv və ya lisenziya sahibi tərəflərin hüquqları ilə qorunur. Yazılı icazə olmadan kopyalama və yayım qadağandır.',
+      },
+      {
+        title: 'Qadağan olunmuş fəaliyyətlər',
+        content:
+          'Platformanın işinə müdaxilə, icazəsiz giriş cəhdləri, texniki istismar, spam və ya digər qanunsuz fəaliyyətlər qəti şəkildə qadağandır və hüquqi tədbirlərə səbəb ola bilər.',
+      },
+      {
+        title: 'Məsuliyyətin məhdudlaşdırılması',
+        content:
+          'audit.tv xidmətlərin fasiləsizliyini təmin etməyə çalışsa da texniki nasazlıqlar, üçüncü tərəf xidmət kəsintiləri və ya istifadəçi tərəfli xətalar üzrə tam məsuliyyət daşımır.',
+      },
+      {
+        title: 'Dəyişikliklər və qüvvəyə minmə',
+        content:
+          'Şərtlər əvvəlcədən xəbərdarlıq edilmədən yenilənə bilər. Yenilənmiş mətnin platformada dərc olunması ilə yeni redaksiya qüvvəyə minmiş hesab olunur.',
+      },
     ],
   },
   settings: {

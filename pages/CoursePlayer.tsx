@@ -14,6 +14,9 @@ const CoursePlayer: React.FC = () => {
   
   const [activeLessonId, setActiveLessonId] = useState<string>('');
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [question, setQuestion] = useState('');
+  const [questions, setQuestions] = useState<Array<{ id: string; text: string; createdAt: string }>>([]);
+  const [note, setNote] = useState('');
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [userEmail, setUserEmail] = useState('');
   const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
@@ -34,6 +37,8 @@ const CoursePlayer: React.FC = () => {
 
   const progressStorageKey =
     userEmail && id ? `audit_course_progress_${userEmail}_${id}` : '';
+  const qaStorageKey =
+    userEmail && id ? `audit_course_qa_${userEmail}_${id}` : '';
   const lastLessonStorageKey =
     userEmail && id ? `audit_course_last_lesson_${userEmail}_${id}` : '';
 
@@ -52,11 +57,6 @@ const CoursePlayer: React.FC = () => {
       return;
     }
     setUserEmail(currentUserEmail);
-
-    if (currentUserEmail === 'tural.rahim99@gmail.com') {
-      setIsAuthorized(true);
-      return;
-    }
 
     const run = async () => {
       try {
@@ -97,6 +97,17 @@ const CoursePlayer: React.FC = () => {
   }, [isAuthorized, progressStorageKey, lessonIds]);
 
   useEffect(() => {
+    if (!isAuthorized || !qaStorageKey) return;
+    try {
+      const raw = localStorage.getItem(qaStorageKey);
+      const parsed = raw ? (JSON.parse(raw) as Array<{ id: string; text: string; createdAt: string }>) : [];
+      setQuestions(Array.isArray(parsed) ? parsed : []);
+    } catch {
+      setQuestions([]);
+    }
+  }, [isAuthorized, qaStorageKey]);
+
+  useEffect(() => {
     if (!isAuthorized || !lastLessonStorageKey) return;
     const savedLessonId = localStorage.getItem(lastLessonStorageKey) || '';
     if (savedLessonId && lessonIds.has(savedLessonId)) {
@@ -112,6 +123,11 @@ const CoursePlayer: React.FC = () => {
   }, [isAuthorized, progressStorageKey, completedLessons]);
 
   useEffect(() => {
+    if (!isAuthorized || !qaStorageKey) return;
+    localStorage.setItem(qaStorageKey, JSON.stringify(questions));
+  }, [isAuthorized, qaStorageKey, questions]);
+
+  useEffect(() => {
     if (!isAuthorized || !lastLessonStorageKey || !activeLesson?.id) return;
     localStorage.setItem(lastLessonStorageKey, activeLesson.id);
   }, [isAuthorized, lastLessonStorageKey, activeLesson]);
@@ -122,32 +138,80 @@ const CoursePlayer: React.FC = () => {
 
   const toggleComplete = (lessonId: string) => {
     if (!lessonId) return;
-    setCompletedLessons(prev => 
+    setCompletedLessons((prev) =>
       prev.includes(lessonId) ? prev.filter((id) => id !== lessonId) : [...prev, lessonId]
     );
   };
 
   const progressPercent = totalLessons > 0 ? Math.round((completedLessons.length / totalLessons) * 100) : 0;
+  const canDownloadCertificate = totalLessons > 0 && completedLessons.length >= totalLessons;
+
+  const handleQuestionSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = question.trim();
+    if (!text) return;
+    setQuestions((prev) => [
+      {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        text,
+        createdAt: new Date().toLocaleString('az-AZ'),
+      },
+      ...prev,
+    ]);
+    setQuestion('');
+    setNote('Sualınız qeyd edildi.');
+  };
+
+  const handleCertificateDownload = () => {
+    if (!canDownloadCertificate) {
+      setNote('Sertifikat üçün əvvəlcə bütün dərsləri tamamlayın.');
+      return;
+    }
+    const certificate = [
+      'AUDIT.TV SERTIFIKAT',
+      '',
+      `Istifadeci: ${userEmail}`,
+      `Kurs: ${course.title}`,
+      `Tamamlanma: ${new Date().toLocaleString('az-AZ')}`,
+      `Ders sayi: ${totalLessons}/${totalLessons}`,
+    ].join('\n');
+    const blob = new Blob([certificate], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sertifikat-${course.id}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setNote('Sertifikat yükləndi.');
+  };
 
   return (
-    <div className="bg-slate-50 min-h-screen lg:h-screen flex flex-col lg:flex-row">
+    <div className="bg-slate-50 min-h-screen lg:h-screen lg:overflow-hidden flex flex-col lg:flex-row">
       {/* Video Content Area */}
-      <div className="flex-1 flex flex-col overflow-y-auto">
-        <div className="bg-slate-950 aspect-video w-full relative overflow-hidden">
+      <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
+        <div className="bg-slate-950 w-full relative overflow-hidden shrink-0 h-[230px] sm:h-[320px] md:h-[420px] lg:h-[min(56vh,620px)]">
           <CsPlayerEmbed
             videoUrl={activeLesson?.videoUrl}
             autoplay={true}
+            forceNative={true}
             onEnded={() => {
               if (activeLesson?.id) toggleComplete(activeLesson.id);
             }}
-            className="w-full h-full [&_.csPlayer]:h-full [&_.csPlayer]:rounded-none [&_.csPlayer]:min-w-0"
-            emptyMessage="Bu dərs üçün video tapılmadı."
+            className="w-full h-full object-contain bg-black [&_.csPlayer]:w-full [&_.csPlayer]:h-full [&_.csPlayer]:rounded-none [&_.csPlayer]:min-w-0"
+            emptyMessage="Bu dərs üçün video linki tapılmadı."
           />
-          <div className="absolute top-4 left-4 flex items-center gap-3">
-            <Link to={`/tedris/${course.id}`} className="p-2 bg-white/10 backdrop-blur-md rounded-lg text-white hover:bg-white/20 transition-all">
+          <div className="pointer-events-none absolute inset-x-0 top-4 z-20 flex items-center gap-3 px-4">
+            <Link
+              to={`/tedris/${course.id}`}
+              className="pointer-events-auto p-2 bg-white/10 backdrop-blur-md rounded-lg text-white hover:bg-white/20 transition-all"
+            >
               <ChevronLeft size={20} />
             </Link>
-            <span className="text-white text-sm font-black bg-white/10 px-4 py-2 rounded-lg backdrop-blur-md">{activeLesson?.title}</span>
+            <span className="max-w-[calc(100vw-7rem)] lg:max-w-[calc(100%-5.5rem)] truncate text-white text-sm font-black bg-white/10 px-4 py-2 rounded-lg backdrop-blur-md">
+              {activeLesson?.title}
+            </span>
           </div>
         </div>
 
@@ -173,7 +237,13 @@ const CoursePlayer: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-14">
-            <button className="flex flex-col items-center gap-3 p-6 bg-white rounded-2xl hover:bg-slate-50 transition-all border border-slate-200">
+            <button
+              className="flex flex-col items-center gap-3 p-6 bg-white rounded-2xl hover:bg-slate-50 transition-all border border-slate-200"
+              onClick={() => {
+                const qaBox = document.getElementById('course-player-qa');
+                if (qaBox) qaBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
               <MessageSquare className="text-primary-500" />
               <span className="text-xs font-black text-slate-700 uppercase tracking-widest">Sual-Cavab</span>
             </button>
@@ -187,11 +257,57 @@ const CoursePlayer: React.FC = () => {
               <Download className="text-amber-500" />
               <span className="text-xs font-black text-slate-700 uppercase tracking-widest">Resurslar ({courseResources.length})</span>
             </button>
-            <button className="flex flex-col items-center gap-3 p-6 bg-white rounded-2xl hover:bg-slate-50 transition-all border border-slate-200">
+            <button
+              className={`flex flex-col items-center gap-3 p-6 rounded-2xl transition-all border ${
+                canDownloadCertificate
+                  ? 'bg-white hover:bg-slate-50 border-slate-200'
+                  : 'bg-slate-100 border-slate-200 text-slate-400'
+              }`}
+              onClick={handleCertificateDownload}
+            >
               <Trophy className="text-emerald-500" />
               <span className="text-xs font-black text-slate-700 uppercase tracking-widest">Sertifikat</span>
             </button>
           </div>
+
+          {note ? (
+            <div className="mb-6 rounded-2xl border border-primary-100 bg-primary-50 px-4 py-3 text-sm font-bold text-primary-700">
+              {note}
+            </div>
+          ) : null}
+
+          <section id="course-player-qa" className="rounded-3xl border border-slate-200 bg-white p-6 mb-8">
+            <h2 className="text-slate-800 font-black text-sm uppercase tracking-widest mb-5 flex items-center gap-2">
+              <MessageSquare size={16} className="text-primary-500" /> Sual-Cavab
+            </h2>
+            <form onSubmit={handleQuestionSubmit} className="space-y-3">
+              <textarea
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                rows={3}
+                placeholder="Sualınızı yazın..."
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:border-primary-500"
+              />
+              <button
+                type="submit"
+                className="rounded-xl bg-primary-600 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-white hover:bg-primary-700"
+              >
+                Sualı Göndər
+              </button>
+            </form>
+            <div className="mt-5 space-y-3">
+              {questions.length === 0 ? (
+                <p className="text-slate-500 text-sm font-medium">Hələ sual yoxdur.</p>
+              ) : (
+                questions.map((item) => (
+                  <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p className="text-sm font-bold text-slate-800">{item.text}</p>
+                    <p className="mt-1 text-[11px] font-bold text-slate-400">{item.createdAt}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
 
           <section id="course-player-resources" className="rounded-3xl border border-slate-200 bg-white p-6 mb-14">
             <h2 className="text-slate-800 font-black text-sm uppercase tracking-widest mb-5 flex items-center gap-2">
@@ -221,7 +337,7 @@ const CoursePlayer: React.FC = () => {
       </div>
 
       {/* Playlist Sidebar */}
-      <div className="w-full lg:w-96 bg-white border-l border-slate-200 flex flex-col lg:h-full overflow-hidden">
+      <div className="w-full lg:w-96 lg:flex-none bg-white border-l border-slate-200 flex flex-col lg:h-full overflow-hidden">
         <div className="p-6 border-b border-slate-200 bg-slate-50">
           <h3 className="text-slate-800 font-black flex items-center gap-2 mb-2 uppercase tracking-widest text-sm">
             <List size={18} className="text-primary-500" /> Kursun Məzmunu

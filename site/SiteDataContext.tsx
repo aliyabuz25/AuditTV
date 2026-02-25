@@ -18,6 +18,7 @@ const SITEMAP_ENDPOINT = `${API_BASE}/api/sitemap`;
 const BROKEN_IMAGE_FRAGMENT = 'photo-1478737270239-2f02b77ac6d5';
 const FALLBACK_THUMBNAIL =
   'https://images.unsplash.com/photo-1515378791036-0648a814c963?auto=format&fit=crop&q=80&w=1200';
+const DEFAULT_FACT_ICON = 'Lightbulb';
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -70,26 +71,61 @@ function sanitizeImageUrl(url: string): string {
   return url;
 }
 
-function sanitizeSitemap(sitemap: Sitemap): Sitemap {
+function normalizeFacts(sitemap: Sitemap): Sitemap {
+  const topFactsRaw = Array.isArray(sitemap.financialFacts) ? sitemap.financialFacts : [];
+  const homeFactsRaw = Array.isArray(sitemap.home?.facts) ? sitemap.home.facts : [];
+
+  const topFacts = topFactsRaw.map((fact, index) => ({
+    id: Number((fact as { id?: number }).id) || index + 1,
+    text: String((fact as { text?: string }).text || ''),
+    icon: String((fact as { icon?: string }).icon || DEFAULT_FACT_ICON),
+  }));
+
+  const homeFacts = homeFactsRaw.map((fact) => ({
+    text: String((fact as { text?: string }).text || ''),
+    icon: String((fact as { icon?: string }).icon || DEFAULT_FACT_ICON),
+  }));
+
+  const mergedFacts =
+    homeFacts.length >= topFacts.length && homeFacts.length > 0
+      ? homeFacts
+      : topFacts.map(({ text, icon }) => ({ text, icon }));
+
   return {
     ...sitemap,
+    financialFacts: mergedFacts.map((fact, index) => ({
+      id: index + 1,
+      text: fact.text,
+      icon: fact.icon,
+    })),
+    home: {
+      ...sitemap.home,
+      facts: mergedFacts,
+    },
+  };
+}
+
+function sanitizeSitemap(sitemap: Sitemap): Sitemap {
+  const factsNormalized = normalizeFacts(sitemap);
+  return {
+    ...factsNormalized,
     blog: {
-      ...sitemap.blog,
-      posts: sitemap.blog.posts.map((post) => ({
+      ...factsNormalized.blog,
+      posts: factsNormalized.blog.posts.map((post) => ({
         ...post,
         imageUrl: sanitizeImageUrl(String(post.imageUrl || '')),
       })),
     },
     podcast: {
-      ...sitemap.podcast,
-      episodes: sitemap.podcast.episodes.map((episode) => ({
+      ...factsNormalized.podcast,
+      episodes: factsNormalized.podcast.episodes.map((episode) => ({
         ...episode,
         thumbnailUrl: sanitizeImageUrl(String(episode.thumbnailUrl || '')),
       })),
     },
     education: {
-      ...sitemap.education,
-      courses: sitemap.education.courses.map((course) => ({
+      ...factsNormalized.education,
+      courses: factsNormalized.education.courses.map((course) => ({
         ...course,
         thumbnailUrl: sanitizeImageUrl(String(course.thumbnailUrl || '')),
       })),
@@ -131,18 +167,19 @@ export const SiteDataProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [reload]);
 
   const saveSitemap = useCallback(async (next: Sitemap) => {
+    const normalized = sanitizeSitemap(next);
     try {
       const response = await fetch(SITEMAP_ENDPOINT, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sitemap: next }),
+        body: JSON.stringify({ sitemap: normalized }),
       });
 
       if (!response.ok) {
         throw new Error(`Sitemap save failed: ${response.status}`);
       }
 
-      setSitemap(next);
+      setSitemap(normalized);
       setError(null);
       return true;
     } catch (err) {

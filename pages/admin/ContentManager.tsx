@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
   Award,
   BarChart3,
   BookOpen,
@@ -36,6 +38,7 @@ import {
   Zap,
   ChevronDown,
   ChevronRight,
+  Copy,
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useSiteData } from '../../site/SiteDataContext';
@@ -53,6 +56,8 @@ const SECTION_ORDER: Array<keyof Sitemap> = [
   'education',
   'faq',
   'contact',
+  'privacyPolicy',
+  'termsOfUse',
   'navLinks',
   'settings',
   'topics',
@@ -70,6 +75,8 @@ const SECTION_META: Record<string, { label: string; Icon: LucideIcon }> = {
   education: { label: 'Tədris', Icon: BookOpen },
   faq: { label: 'Tez-tez Suallar', Icon: MessagesSquare },
   contact: { label: 'Əlaqə', Icon: Phone },
+  privacyPolicy: { label: 'Məxfilik Siyasəti', Icon: Shield },
+  termsOfUse: { label: 'İstifadə Şərtləri', Icon: FileText },
   navLinks: { label: 'Naviqasiya', Icon: Navigation },
   settings: { label: 'Sistem Ayarları', Icon: Database },
   topics: { label: 'Mövzular', Icon: Database },
@@ -150,6 +157,7 @@ const isIconField = (path: Path) => {
   const key = String(path[path.length - 1] || '').toLowerCase();
   return key === 'icon' || key === 'iconname';
 };
+const isFactsArrayPath = (path: Path) => String(path[path.length - 1] || '').toLowerCase() === 'facts';
 
 const isSectionKey = (value: string): value is keyof Sitemap => SECTION_ORDER.includes(value as keyof Sitemap);
 const pathToKey = (path: Path) => path.join('.');
@@ -171,7 +179,7 @@ const isImageUrlField = (path: Path) => {
 };
 const isLinkUrlField = (path: Path) => {
   const key = String(path[path.length - 1] || '').toLowerCase();
-  if (!key.includes('url') && !key.includes('link')) return false;
+  if (!key.includes('url') && !key.includes('link') && key !== 'path') return false;
   if (key === 'fileurl') return false;
   if (key.includes('image') || key.includes('thumbnail') || key.includes('logo') || key.includes('avatar')) return false;
   return true;
@@ -180,6 +188,7 @@ const cleanLabel = (title: string, path: Path) => {
   const key = String(path[path.length - 1] || '').toLowerCase();
   if (key === 'content') return 'Mətn';
   if (key === 'excerpt') return 'Qısa mətn';
+  if (key === 'path') return 'Path URL';
   if (key.includes('image') || key.includes('thumbnail') || key.includes('logo') || key.includes('avatar')) return 'Şəkil';
   if (key === 'fileurl') return 'Fayl';
   if (key.includes('url') || key.includes('link')) return 'Link URL';
@@ -465,16 +474,16 @@ const ContentManager: React.FC = () => {
             {pickerOpen ? 'İkonları Gizlət' : 'İkon Seç'}
           </button>
         </div>
-        <div className="bg-white border border-slate-200 rounded-2xl p-3 space-y-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-2.5 space-y-2.5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700">
-              {CurrentIcon ? <CurrentIcon size={16} /> : <AlertCircle size={16} />}
+            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
+              {CurrentIcon ? <CurrentIcon size={20} /> : <AlertCircle size={20} />}
             </div>
             <input
               type="text"
               value={value}
               onChange={(e) => updateValue(path, e.target.value)}
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-800"
+              className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium text-slate-800"
               placeholder="İkon adı"
             />
           </div>
@@ -485,12 +494,12 @@ const ContentManager: React.FC = () => {
                   key={key}
                   type="button"
                   onClick={() => updateValue(path, key)}
-                  className={`p-2 rounded-xl flex items-center justify-center transition-all ${
+                  className={`p-2.5 rounded-lg flex items-center justify-center transition-all ${
                     value === key ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
                   }`}
                   title={key}
                 >
-                  <Icon size={16} />
+                  <Icon size={20} />
                 </button>
               ))}
             </div>
@@ -512,9 +521,144 @@ const ContentManager: React.FC = () => {
     const changed = isPathChanged(path);
 
     if (Array.isArray(value)) {
+      if (isFactsArrayPath(path)) {
+        const isCollapsed = !!collapsed[key] && !normalizedQuery;
+        const hasAnyId = value.some((item) => item && typeof item === 'object' && !Array.isArray(item) && 'id' in (item as Record<string, unknown>));
+        const moveFact = (index: number, direction: -1 | 1) => {
+          const target = index + direction;
+          if (target < 0 || target >= value.length) return;
+          const next = [...value];
+          [next[index], next[target]] = [next[target], next[index]];
+          updateValue(path, next);
+        };
+        const duplicateFact = (index: number) => {
+          const row = value[index];
+          if (!row || typeof row !== 'object' || Array.isArray(row)) return;
+          const clone = { ...(row as Record<string, unknown>) };
+          const next = [...value.slice(0, index + 1), clone, ...value.slice(index + 1)];
+          updateValue(path, next);
+        };
+
+        return (
+          <div key={key} className={`bg-slate-50 border rounded-xl p-3 space-y-2.5 ${changed ? 'border-primary-200' : 'border-slate-200'}`}>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))}
+                className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-600"
+              >
+                {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                {title}
+                <span className="text-[10px] font-bold normal-case tracking-normal text-slate-500">({value.length})</span>
+                {changed ? <span className="px-2 py-0.5 rounded-full text-[9px] bg-primary-100 text-primary-700">Dəyişib</span> : null}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const nextId = hasAnyId
+                    ? Math.max(
+                        0,
+                        ...value.map((item) => {
+                          const id = Number((item as Record<string, unknown>)?.id);
+                          return Number.isFinite(id) ? id : 0;
+                        }),
+                      ) + 1
+                    : undefined;
+                  const next = hasAnyId ? { id: nextId, text: 'Yeni fakt...', icon: 'Lightbulb' } : { text: 'Yeni fakt...', icon: 'Lightbulb' };
+                  updateValue(path, [...value, next]);
+                }}
+                className="px-3 py-1.5 rounded-lg bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1"
+              >
+                <Plus size={12} /> Əlavə Et
+              </button>
+            </div>
+
+            <div className={`space-y-3 ${isCollapsed ? 'hidden' : ''}`}>
+              {value.length === 0 ? (
+                <div className="text-xs font-medium text-slate-400">Fakt yoxdur.</div>
+              ) : (
+                value.map((item, index) => {
+                  const row = item && typeof item === 'object' && !Array.isArray(item) ? (item as Record<string, unknown>) : {};
+                  const iconValue = String(row.icon || 'Lightbulb');
+                  const textValue = String(row.text || '');
+                  const IconCmp = ICON_OPTIONS.find((it) => it.key === iconValue)?.Icon || Lightbulb;
+
+                  return (
+                    <div key={`${key}.${index}`} className="bg-white border border-slate-200 rounded-lg p-2.5 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sətir {index + 1}</span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => moveFact(index, -1)}
+                            disabled={index === 0}
+                            className="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <ArrowUp size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveFact(index, 1)}
+                            disabled={index === value.length - 1}
+                            className="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <ArrowDown size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => duplicateFact(index)}
+                            className="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100"
+                          >
+                            <Copy size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeArrayItem(path, index)}
+                            className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <span className="text-xs font-black text-slate-500">Text</span>
+                          <textarea
+                            rows={3}
+                            value={textValue}
+                            onChange={(e) => updateValue([...path, index, 'text'], e.target.value)}
+                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2.5 font-medium text-slate-800"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          {renderIconPicker([...path, index, 'icon'], iconValue, 'Icon')}
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-3 opacity-10">
+                          <IconCmp size={66} />
+                        </div>
+                        <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center text-primary-600 mb-2.5">
+                          <IconCmp size={22} />
+                        </div>
+                        <p className="text-sm font-bold text-slate-700 leading-relaxed">
+                          {textValue || 'Fakt mətni daxil edin...'}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        );
+      }
+
       const isCollapsed = !!collapsed[key] && !normalizedQuery;
       return (
-        <div key={key} className={`bg-slate-50 border rounded-2xl p-4 space-y-3 ${changed ? 'border-primary-200' : 'border-slate-200'}`}>
+        <div key={key} className={`bg-slate-50 border rounded-xl p-3 space-y-2.5 ${changed ? 'border-primary-200' : 'border-slate-200'}`}>
           <div className="flex items-center justify-between">
             <button
               type="button"
@@ -538,7 +682,7 @@ const ContentManager: React.FC = () => {
               <div className="text-xs font-medium text-slate-400">Boş siyahıdır.</div>
             ) : (
               value.map((item, index) => (
-                <div key={`${key}.${index}`} className="bg-white border border-slate-200 rounded-xl p-3 space-y-2">
+                <div key={`${key}.${index}`} className="bg-white border border-slate-200 rounded-lg p-2.5 space-y-2">
                   {(() => {
                     const rowKey = `__row.${key}.${index}`;
                     const rowCollapsed = !!collapsed[rowKey] && !normalizedQuery;
@@ -594,7 +738,7 @@ const ContentManager: React.FC = () => {
       const entries = Object.entries(value as Record<string, unknown>);
       const isCollapsed = !!collapsed[key] && !normalizedQuery;
       return (
-        <div key={key} className={`bg-white border rounded-2xl p-4 space-y-3 ${changed ? 'border-primary-200' : 'border-slate-200'}`}>
+        <div key={key} className={`bg-white border rounded-xl p-3 space-y-2.5 ${changed ? 'border-primary-200' : 'border-slate-200'}`}>
           <button
             type="button"
             onClick={() => setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))}
@@ -617,7 +761,7 @@ const ContentManager: React.FC = () => {
 
     if (typeof value === 'boolean') {
       return (
-        <label key={key} className={`flex items-center justify-between gap-4 bg-white border rounded-xl px-4 py-3 ${changed ? 'border-primary-200' : 'border-slate-200'}`}>
+        <label key={key} className={`flex items-center justify-between gap-4 bg-white border rounded-lg px-3 py-2.5 ${changed ? 'border-primary-200' : 'border-slate-200'}`}>
           <span className="text-sm font-bold text-slate-700">{title}</span>
           <input
             type="checkbox"
@@ -637,7 +781,7 @@ const ContentManager: React.FC = () => {
             type="number"
             value={Number.isFinite(value) ? value : 0}
             onChange={(e) => updateValue(path, Number(e.target.value || 0))}
-            className={`w-full bg-white border rounded-xl px-4 py-3 font-medium text-slate-800 ${changed ? 'border-primary-200' : 'border-slate-200'}`}
+            className={`w-full bg-white border rounded-lg px-3 py-2.5 font-medium text-slate-800 ${changed ? 'border-primary-200' : 'border-slate-200'}`}
           />
         </label>
       );
@@ -681,8 +825,8 @@ const ContentManager: React.FC = () => {
           ) : null}
         </span>
         {imageField ? (
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3">
-            <div className="w-full h-44 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+            <div className="w-full h-40 rounded-lg bg-white border border-slate-200 overflow-hidden flex items-center justify-center">
               <ImageWithPlaceholder
                 src={strValue}
                 alt={title}
@@ -697,7 +841,7 @@ const ContentManager: React.FC = () => {
             rows={4}
             value={strValue}
             onChange={(e) => updateValue(path, getStoredFromEditor(path, e.target.value))}
-            className={`w-full bg-white border rounded-xl px-4 py-3 font-medium text-slate-800 ${changed ? 'border-primary-200' : 'border-slate-200'}`}
+            className={`w-full bg-white border rounded-lg px-3 py-2.5 font-medium text-slate-800 ${changed ? 'border-primary-200' : 'border-slate-200'}`}
           />
         ) : (
           <div className="flex gap-2">
@@ -710,14 +854,14 @@ const ContentManager: React.FC = () => {
                 updateValue(path, normalizeToFullUrl(e.target.value, canonicalBase));
               }}
               placeholder={linkField ? 'https://example.com/səhifə' : ''}
-              className={`w-full bg-white border rounded-xl px-4 py-3 font-medium text-slate-800 ${changed ? 'border-primary-200' : 'border-slate-200'}`}
+              className={`w-full bg-white border rounded-lg px-3 py-2.5 font-medium text-slate-800 ${changed ? 'border-primary-200' : 'border-slate-200'}`}
             />
             {linkField && strValue ? (
               <a
                 href={normalizeToFullUrl(strValue, canonicalBase)}
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-black uppercase tracking-widest whitespace-nowrap"
+                className="px-3.5 py-2.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-black uppercase tracking-widest whitespace-nowrap"
               >
                 Aç
               </a>
@@ -728,20 +872,93 @@ const ContentManager: React.FC = () => {
     );
   };
 
-  const activeSectionNode = renderField(
-    [activeTab],
-    (draft as Record<string, unknown>)[activeTab],
-    SECTION_META[String(activeTab)]?.label || labelize(String(activeTab)),
-  );
+  const renderSettingsSection = (): React.ReactNode => {
+    const renderSettingField = (path: Path, label: string, wide = false) => {
+      const node = renderField(path, getAtPath(draft, path), label);
+      if (!node) return null;
+      return <div className={wide ? 'md:col-span-2' : ''}>{node}</div>;
+    };
+
+    const renderCard = (title: string, Icon: LucideIcon, nodes: React.ReactNode[]) => {
+      const visibleNodes = nodes.filter(Boolean);
+      if (!visibleNodes.length) return null;
+      return (
+        <div className="bg-white border border-slate-200 rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2.5">
+            <Icon size={17} className="text-primary-600" />
+            <h4 className="text-sm font-black uppercase tracking-widest text-slate-800">{title}</h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">{visibleNodes}</div>
+        </div>
+      );
+    };
+
+    const seoCard = renderCard('SEO', Globe, [
+      renderSettingField(['settings', 'seo', 'title'], 'Title'),
+      renderSettingField(['settings', 'seo', 'description'], 'Description'),
+      renderSettingField(['settings', 'seo', 'keywords'], 'Keywords'),
+      renderSettingField(['settings', 'seo', 'canonicalUrl'], 'Canonical URL'),
+    ]);
+
+    const smtpCard = renderCard('SMTP', Mail, [
+      renderSettingField(['settings', 'smtp', 'host'], 'Host'),
+      renderSettingField(['settings', 'smtp', 'port'], 'Port'),
+      renderSettingField(['settings', 'smtp', 'username'], 'Username'),
+      renderSettingField(['settings', 'smtp', 'password'], 'Password'),
+      renderSettingField(['settings', 'smtp', 'secure'], 'Secure'),
+      renderSettingField(['settings', 'smtp', 'fromEmail'], 'From Email'),
+      renderSettingField(['settings', 'smtp', 'fromName'], 'From Name'),
+      renderSettingField(['settings', 'smtp', 'notifyEmails'], 'Notify Emails'),
+    ]);
+
+    const brandingCard = renderCard('Branding', Award, [
+      renderSettingField(['settings', 'branding', 'logoUrl'], 'Logo URL'),
+      renderSettingField(['settings', 'branding', 'siteName'], 'Site Name'),
+    ]);
+
+    const footerCard = renderCard('Footer', FileText, [
+      renderSettingField(['settings', 'footer', 'aboutText'], 'About Text', true),
+      renderSettingField(['settings', 'footer', 'platformTitle'], 'Platform Title'),
+      renderSettingField(['settings', 'footer', 'resourcesTitle'], 'Resources Title'),
+      renderSettingField(['settings', 'footer', 'contactTitle'], 'Contact Title'),
+      renderSettingField(['settings', 'footer', 'address'], 'Address'),
+      renderSettingField(['settings', 'footer', 'phone'], 'Phone'),
+      renderSettingField(['settings', 'footer', 'email'], 'Email'),
+      renderSettingField(['settings', 'footer', 'platformLinks'], 'Platform Linkləri', true),
+      renderSettingField(['settings', 'footer', 'resourceLinks'], 'Resurs Linkləri', true),
+      renderSettingField(['settings', 'footer', 'socialLinks', 'linkedin'], 'Linkedin'),
+      renderSettingField(['settings', 'footer', 'socialLinks', 'facebook'], 'Facebook'),
+      renderSettingField(['settings', 'footer', 'socialLinks', 'twitter'], 'Twitter'),
+      renderSettingField(['settings', 'footer', 'socialLinks', 'email'], 'Social Email'),
+      renderSettingField(['settings', 'footer', 'copyrightText'], 'Copyright Text', true),
+      renderSettingField(['settings', 'footer', 'privacyLabel'], 'Privacy Label'),
+      renderSettingField(['settings', 'footer', 'privacyUrl'], 'Privacy URL'),
+      renderSettingField(['settings', 'footer', 'termsLabel'], 'Terms Label'),
+      renderSettingField(['settings', 'footer', 'termsUrl'], 'Terms URL'),
+    ]);
+
+    const cards = [seoCard, smtpCard, brandingCard, footerCard].filter(Boolean);
+    if (!cards.length) return null;
+    return <div className="space-y-3">{cards}</div>;
+  };
+
+  const activeSectionNode =
+    activeTab === 'settings'
+      ? renderSettingsSection()
+      : renderField(
+          [activeTab],
+          (draft as Record<string, unknown>)[activeTab],
+          SECTION_META[String(activeTab)]?.label || labelize(String(activeTab)),
+        );
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4">
       {error ? <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm font-bold text-red-700">{error}</div> : null}
       {saved ? <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-sm font-bold text-emerald-700">Saxlanıldı.</div> : null}
 
-      <div className="space-y-4">
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm">
-          <div className="mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
+      <div className="space-y-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-4">
+          <div className="mb-3 pb-2.5 border-b border-slate-100 flex items-center gap-2">
             {SECTION_META[String(activeTab)]?.Icon ? React.createElement(SECTION_META[String(activeTab)].Icon, { size: 18, className: 'text-primary-600' }) : null}
             <h3 className="text-lg font-black text-slate-900">
               {SECTION_META[String(activeTab)]?.label || labelize(String(activeTab))}
@@ -749,13 +966,13 @@ const ContentManager: React.FC = () => {
             {isPathChanged([activeTab]) ? <span className="ml-2 px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-primary-100 text-primary-700">Dəyişiklik var</span> : null}
           </div>
           {activeTab === 'blog' ? (
-            <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs font-bold text-amber-700">
+          <div className="mb-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-xs font-bold text-amber-700">
               Bloq bölməsində yükləmə deaktivdir. Şəkil və media yükləməni `Bloq` səhifəsindən (`#/admin/blogs`) edin.
             </div>
           ) : null}
 
-          <div className="mb-4 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] gap-3">
-            <label className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+          <div className="mb-3 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] gap-2.5">
+            <label className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
               <Search size={15} className="text-slate-400" />
               <input
                 value={query}
@@ -768,7 +985,7 @@ const ContentManager: React.FC = () => {
               type="button"
               onClick={() => setShowOnlyEmpty((prev) => !prev)}
               className={`px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest ${
-                showOnlyEmpty ? 'bg-amber-500 text-white shadow-lg shadow-amber-200' : 'bg-slate-100 text-slate-700'
+                showOnlyEmpty ? 'bg-amber-500 text-white shadow-sm shadow-amber-200' : 'bg-slate-100 text-slate-700'
               }`}
             >
               {showOnlyEmpty ? 'Boşlar: Açıq' : 'Yalnız Boşlar'}
@@ -777,7 +994,7 @@ const ContentManager: React.FC = () => {
               type="button"
               onClick={() => setShowOnlyChanged((prev) => !prev)}
               className={`px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest ${
-                showOnlyChanged ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-slate-100 text-slate-700'
+                showOnlyChanged ? 'bg-primary-600 text-white shadow-sm shadow-primary-200' : 'bg-slate-100 text-slate-700'
               }`}
             >
               {showOnlyChanged ? 'Dəyişənlər: Açıq' : 'Yalnız Dəyişənlər'}
@@ -804,9 +1021,9 @@ const ContentManager: React.FC = () => {
             </button>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200 rounded-3xl p-4 space-y-3">
+          <div className={activeTab === 'settings' ? 'space-y-3' : 'bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5'}>
             {activeSectionNode || (
-              <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-8 text-center">
+              <div className="bg-white border border-dashed border-slate-300 rounded-xl p-6 text-center">
                 <p className="text-sm font-bold text-slate-500">
                   {showOnlyChanged
                     ? 'Bu bölmədə dəyişdirilmiş sahə yoxdur.'
@@ -819,9 +1036,9 @@ const ContentManager: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-4 flex flex-wrap justify-between gap-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-wrap justify-between gap-3">
           <div className="flex flex-wrap gap-3">
-            <button onClick={handleReset} className="px-4 py-2 rounded-xl bg-slate-100 text-slate-800 font-black text-xs uppercase tracking-widest">
+            <button onClick={handleReset} className="px-4 py-2 rounded-lg bg-slate-100 text-slate-800 font-black text-xs uppercase tracking-widest">
               Dəyişiklikləri Sıfırla
             </button>
           </div>
@@ -829,7 +1046,7 @@ const ContentManager: React.FC = () => {
           <button
             onClick={handleSave}
             disabled={saving || !dirty}
-            className="px-6 py-3 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-primary-200 disabled:opacity-60 flex items-center gap-2"
+            className="px-5 py-2.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-black text-sm uppercase tracking-widest shadow-sm shadow-primary-200 disabled:opacity-60 flex items-center gap-2"
           >
             <Save size={16} /> {saving ? 'Saxlanır...' : 'Hamısını Saxla'}
           </button>

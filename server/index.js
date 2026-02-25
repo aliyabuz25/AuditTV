@@ -173,6 +173,32 @@ function normalizeSitemap(raw) {
   const home = sitemap.home && typeof sitemap.home === 'object' ? sitemap.home : {};
   const benefit = home.benefit && typeof home.benefit === 'object' ? home.benefit : {};
   const clients = Array.isArray(sitemap.clients) ? sitemap.clients : [];
+  const privacyPolicy = sitemap.privacyPolicy && typeof sitemap.privacyPolicy === 'object' ? sitemap.privacyPolicy : {};
+  const privacySections = Array.isArray(privacyPolicy.sections) ? privacyPolicy.sections : [];
+  const termsOfUse = sitemap.termsOfUse && typeof sitemap.termsOfUse === 'object' ? sitemap.termsOfUse : {};
+  const termsSections = Array.isArray(termsOfUse.sections) ? termsOfUse.sections : [];
+  const normalizedPrivacySections = privacySections
+    .map((section) => ({
+      title: String(section?.title || ''),
+      content: String(section?.content || ''),
+    }))
+    .filter((section) => section.title || section.content);
+  const normalizedTermsSections = termsSections
+    .map((section) => ({
+      title: String(section?.title || ''),
+      content: String(section?.content || ''),
+    }))
+    .filter((section) => section.title || section.content);
+  const fallbackPrivacySections = [
+    { title: 'Toplanan məlumatlar', content: '' },
+    { title: 'Məlumatların istifadə məqsədi', content: '' },
+    { title: 'Məlumatların paylaşılması', content: '' },
+  ];
+  const fallbackTermsSections = [
+    { title: 'Ümumi müddəalar', content: '' },
+    { title: 'Xidmətə çıxış və hesab məsuliyyəti', content: '' },
+    { title: 'İntellektual mülkiyyət hüquqları', content: '' },
+  ];
 
   return {
     ...sitemap,
@@ -190,6 +216,22 @@ function normalizeSitemap(raw) {
         ...benefit,
         fileUrl: String(benefit.fileUrl || ''),
       },
+    },
+    privacyPolicy: {
+      title: 'Məxfilik Siyasəti',
+      updatedAt: '24 Fevral 2026',
+      intro: 'Bu səhifədə audit.tv platformasında şəxsi məlumatların toplanması, istifadəsi və qorunması prinsipləri izah olunur.',
+      sections: fallbackPrivacySections,
+      ...privacyPolicy,
+      sections: normalizedPrivacySections.length > 0 ? normalizedPrivacySections : fallbackPrivacySections,
+    },
+    termsOfUse: {
+      title: 'İstifadə Şərtləri',
+      updatedAt: '24 Fevral 2026',
+      intro: 'Bu səhifə platformadan istifadə zamanı hüquq və öhdəlikləri tənzimləyən əsas qaydaları ehtiva edir.',
+      sections: fallbackTermsSections,
+      ...termsOfUse,
+      sections: normalizedTermsSections.length > 0 ? normalizedTermsSections : fallbackTermsSections,
     },
     settings: {
       ...settings,

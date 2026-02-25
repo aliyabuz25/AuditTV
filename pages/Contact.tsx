@@ -10,6 +10,19 @@ const ContactPage: React.FC = () => {
   const { sitemap } = useSiteData();
   const toast = useToast();
   const { contact } = sitemap;
+  const formFields = contact.formFields || {
+    fullNameLabel: 'Tam Adınız',
+    fullNamePlaceholder: 'Məsələn: Orxan Əliyev',
+    emailLabel: 'E-poçt Ünvanı',
+    emailPlaceholder: 'email@nümunə.com',
+    phoneLabel: 'GSM Nömrəsi',
+    phonePlaceholder: '+994 50 123 45 67',
+    subjectLabel: 'Mövzu',
+    messageLabel: 'Mesajınız',
+    messagePlaceholder: 'Burada ətraflı məlumat yaza bilərsiniz...',
+    submitButtonText: 'Göndər',
+  };
+  const subjectOptions = contact.subjectOptions?.length ? contact.subjectOptions : ['Digər'];
 
   const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -150,35 +163,35 @@ const ContactPage: React.FC = () => {
              <form onSubmit={handleContactSubmit} className="space-y-8">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Tam Adınız</label>
-                     <input name="fullName" required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder="Məsələn: Orxan Əliyev" />
+                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">{formFields.fullNameLabel}</label>
+                     <input name="fullName" required type="text" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder={formFields.fullNamePlaceholder} />
                   </div>
                   <div>
-                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">E-poçt Ünvanı</label>
-                     <input name="email" required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder="email@nümunə.com" />
+                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">{formFields.emailLabel}</label>
+                     <input name="email" required type="email" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder={formFields.emailPlaceholder} />
                   </div>
                   <div className="md:col-span-2">
-                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">GSM Nömrəsi</label>
-                     <input name="phone" required type="tel" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder="+994 50 123 45 67" />
+                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">{formFields.phoneLabel}</label>
+                     <input name="phone" required type="tel" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder={formFields.phonePlaceholder} />
                   </div>
                </div>
 
                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Mövzu</label>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">{formFields.subjectLabel}</label>
                   <select name="subject" className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 transition-all font-bold appearance-none">
-                     {contact.subjectOptions.map((option, index) => (
+                     {subjectOptions.map((option, index) => (
                        <option key={`${option}-${index}`}>{option}</option>
                      ))}
                   </select>
                </div>
 
                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Mesajınız</label>
-                  <textarea name="message" required rows={5} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder="Burada ətraflı məlumat yaza bilərsiniz..."></textarea>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">{formFields.messageLabel}</label>
+                  <textarea name="message" required rows={5} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 focus:ring-4 focus:ring-primary-500/10 transition-all font-bold" placeholder={formFields.messagePlaceholder}></textarea>
                </div>
 
                <button type="submit" className="w-full py-5 bg-primary-600 text-white font-black rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 flex items-center justify-center gap-3">
-                  Göndər <Send size={20} />
+                  {formFields.submitButtonText} <Send size={20} />
                </button>
              </form>
           </div>

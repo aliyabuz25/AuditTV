@@ -62,12 +62,6 @@ const CourseDetail: React.FC = () => {
   }, [searchParams]);
 
   const checkAccessStatus = async (userEmail: string) => {
-    // Tural Rahim master access
-    if (userEmail === 'tural.rahim99@gmail.com') {
-      setStatus('approved');
-      return;
-    }
-
     const response = await fetch(`${API_BASE}/api/course-requests/check?email=${encodeURIComponent(userEmail)}&courseId=${encodeURIComponent(id || '')}`);
     const payload = response.ok ? await response.json() : { request: null };
     const userRequest = payload.request;
@@ -101,16 +95,6 @@ const CourseDetail: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    // Whitelist check for master user
-    if (email === 'tural.rahim99@gmail.com') {
-      localStorage.setItem('audit_current_user_email', email);
-      setStatus('approved');
-      setIsModalOpen(false);
-      toast.success('Giriş uğurla tamamlandı.');
-      navigate(`/tedris/${course.id}/player`);
-      return;
-    }
 
     const response = await fetch(`${API_BASE}/api/course-requests/check?email=${encodeURIComponent(email)}&courseId=${encodeURIComponent(id || '')}`);
     const payload = response.ok ? await response.json() : { request: null };
@@ -148,15 +132,6 @@ const CourseDetail: React.FC = () => {
     setError('');
 
     if (!email || !password) return;
-
-    if (email === 'tural.rahim99@gmail.com') {
-      localStorage.setItem('audit_current_user_email', email);
-      setStatus('approved');
-      setIsModalOpen(false);
-      toast.success('Giriş uğurla tamamlandı.');
-      navigate(`/tedris/${course.id}/player`);
-      return;
-    }
 
     const checkResponse = await fetch(`${API_BASE}/api/course-requests/check?email=${encodeURIComponent(email)}&courseId=${encodeURIComponent(id || '')}`);
     const checkPayload = checkResponse.ok ? await checkResponse.json() : { request: null };
@@ -274,7 +249,7 @@ const CourseDetail: React.FC = () => {
                  </div>
                  {status === 'pending' && (
                     <p className="mt-4 text-slate-400 text-sm font-medium italic">
-                      Admin ödənişinizi təsdiqlədikdən sonra videolar aktivləşəcək.
+                      Bu kurs üçün ödəniş təsdiqləndikdən sonra videolar aktivləşəcək. Hər kurs ayrıca alınır.
                     </p>
                  )}
               </div>
@@ -391,7 +366,7 @@ const CourseDetail: React.FC = () => {
                     /* REGISTER / REQUEST FORM */
                     <form onSubmit={handleRegisterRequest} className="space-y-6">
                        <h3 className="text-2xl font-black text-slate-900 mb-2">Kurs Üçün Müraciət</h3>
-                       <p className="text-slate-400 text-xs font-medium mb-8 leading-relaxed">Hesab yaradın və bu kurs üçün giriş müraciəti göndərin.</p>
+                       <p className="text-slate-400 text-xs font-medium mb-8 leading-relaxed">Hesab yaradın və yalnız bu kurs üçün giriş müraciəti göndərin.</p>
                        
                        <div className="space-y-4">
                           <div className="relative">
@@ -439,7 +414,7 @@ const CourseDetail: React.FC = () => {
                        <div className="p-4 bg-primary-50 rounded-xl border border-primary-100 flex gap-3">
                          <Shield className="text-primary-600 flex-shrink-0" size={16} />
                          <p className="text-[10px] text-primary-700 font-bold leading-relaxed uppercase">
-                           Ödəniş təsdiqləndikdən sonra bu kursa ömürlük giriş əldə edəcəksiniz.
+                           Ödəniş təsdiqləndikdən sonra yalnız bu kurs hesabınıza əlavə olunacaq.
                          </p>
                        </div>
                     </form>
