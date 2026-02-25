@@ -198,9 +198,7 @@ const AboutPage: React.FC = () => {
                        <p className="text-primary-600 text-[10px] font-black uppercase tracking-[0.2em] mb-8">{member.role}</p>
                        <p className="text-slate-500 text-sm font-medium leading-relaxed mb-10">{member.bio}</p>
                        
-                       <div className="flex gap-4 border-t border-slate-200 pt-8">
-                          <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary-600 transition-colors">LinkedIn Profile</button>
-                       </div>
+                       <div className="border-t border-slate-200 pt-8" aria-hidden="true" />
                     </div>
                  </div>
               ))}

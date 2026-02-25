@@ -106,6 +106,11 @@ const PodcastPage: React.FC = () => {
                      <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                      <span className="flex items-center gap-1"><Clock size={12} /> {episode.duration}</span>
                   </div>
+                  <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-slate-600 min-w-0">
+                    <Mic size={14} className="text-primary-600 flex-shrink-0" />
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Host:</span>
+                    <span className="truncate">{episode.host || '-'}</span>
+                  </div>
                   <h3 className="text-xl font-black text-slate-900 mb-3 group-hover:text-primary-600 transition-colors leading-tight">
                     {episode.title}
                   </h3>
