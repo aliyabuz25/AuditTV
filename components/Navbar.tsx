@@ -3,6 +3,17 @@ import { NavLink } from 'react-router-dom';
 import { Menu, X, LogIn, ChevronRight } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 
+const normalizeInternalPath = (value: string) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '/';
+  if (/^(https?:|mailto:|tel:)/i.test(raw)) return raw;
+  if (raw.startsWith('//')) return raw;
+  if (raw.startsWith('/')) return raw;
+  if (raw.startsWith('#/')) return `/${raw.slice(2)}`;
+  if (raw.startsWith('#')) return '/';
+  return `/${raw.replace(/^\/+/, '')}`;
+};
+
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { sitemap } = useSiteData();
@@ -28,7 +39,7 @@ const Navbar: React.FC = () => {
               {NAV_LINKS.map((link) => (
                 <NavLink
                   key={link.name}
-                  to={link.path}
+                  to={normalizeInternalPath(link.path)}
                   className={({ isActive }) =>
                     `px-4 py-2 text-sm font-bold transition-all relative ${
                       isActive
@@ -85,7 +96,7 @@ const Navbar: React.FC = () => {
             {NAV_LINKS.map((link) => (
               <NavLink
                 key={link.name}
-                to={link.path}
+                to={normalizeInternalPath(link.path)}
                 onClick={() => setIsOpen(false)}
                 className={({ isActive }) =>
                   `block px-4 py-4 rounded-xl text-base font-bold transition-colors ${

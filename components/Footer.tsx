@@ -3,14 +3,25 @@ import { NavLink, Link } from 'react-router-dom';
 import { Linkedin, Facebook, Twitter, Mail } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 
-const isInternalPath = (value: string) => value.startsWith('/') && !value.startsWith('//');
+const normalizeInternalPath = (value: string) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '/';
+  if (/^(https?:|mailto:|tel:)/i.test(raw)) return raw;
+  if (raw.startsWith('//')) return raw;
+  if (raw.startsWith('/')) return raw;
+  if (raw.startsWith('#/')) return `/${raw.slice(2)}`;
+  if (raw.startsWith('#')) return '/';
+  return `/${raw.replace(/^\/+/, '')}`;
+};
+const isInternalPath = (value: string) => normalizeInternalPath(value).startsWith('/') && !normalizeInternalPath(value).startsWith('//');
 
 const FooterLegalLink: React.FC<{ href: string; label: string }> = ({ href, label }) => {
-  if (isInternalPath(href)) {
-    return <Link to={href} className="hover:text-white transition-colors">{label}</Link>;
+  const normalizedHref = normalizeInternalPath(href);
+  if (isInternalPath(normalizedHref)) {
+    return <Link to={normalizedHref} className="hover:text-white transition-colors">{label}</Link>;
   }
   return (
-    <a href={href || '#'} className="hover:text-white transition-colors" target="_blank" rel="noreferrer">
+    <a href={normalizedHref || '#'} className="hover:text-white transition-colors" target="_blank" rel="noreferrer">
       {label}
     </a>
   );
@@ -42,7 +53,7 @@ const Footer: React.FC = () => {
              <ul className="space-y-3">
                {footer.platformLinks.map((link) => (
                  <li key={link.path + link.label}>
-                   <NavLink to={link.path} className="text-neutral-400 hover:text-white transition-colors">{link.label}</NavLink>
+                   <NavLink to={normalizeInternalPath(link.path)} className="text-neutral-400 hover:text-white transition-colors">{link.label}</NavLink>
                  </li>
                ))}
              </ul>
@@ -53,7 +64,7 @@ const Footer: React.FC = () => {
              <ul className="space-y-3">
                {footer.resourceLinks.map((link) => (
                  <li key={link.path + link.label}>
-                   <NavLink to={link.path} className="text-neutral-400 hover:text-white transition-colors">{link.label}</NavLink>
+                   <NavLink to={normalizeInternalPath(link.path)} className="text-neutral-400 hover:text-white transition-colors">{link.label}</NavLink>
                  </li>
                ))}
              </ul>

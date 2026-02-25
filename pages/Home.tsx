@@ -6,6 +6,17 @@ import { useSiteData } from '../site/SiteDataContext';
 import { useToast } from '../components/ToastProvider';
 import ImageWithPlaceholder from '../components/ImageWithPlaceholder';
 
+const normalizeInternalPath = (value: string) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '/';
+  if (/^(https?:|mailto:|tel:)/i.test(raw)) return raw;
+  if (raw.startsWith('//')) return raw;
+  if (raw.startsWith('/')) return raw;
+  if (raw.startsWith('#/')) return `/${raw.slice(2)}`;
+  if (raw.startsWith('#')) return '/';
+  return `/${raw.replace(/^\/+/, '')}`;
+};
+
 const IconMap: any = {
   ShieldCheck, Calculator, Users, Briefcase, TrendingUp, FileText, AlertCircle, Cpu
 };
@@ -87,10 +98,10 @@ const Home: React.FC = () => {
                 </p>
 
                 <div className="flex flex-wrap gap-5">
-                   <Link to={home.hero.btn1Link} className="px-10 py-5 bg-primary-600 text-white font-bold rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 flex items-center gap-3">
+                   <Link to={normalizeInternalPath(home.hero.btn1Link)} className="px-10 py-5 bg-primary-600 text-white font-bold rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 flex items-center gap-3">
                      {home.hero.btn1Text} <ArrowRight size={20} />
                    </Link>
-                   <Link to={home.hero.btn2Link} className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-bold rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3">
+                   <Link to={normalizeInternalPath(home.hero.btn2Link)} className="px-10 py-5 bg-white text-slate-900 border border-slate-200 font-bold rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3">
                      {home.hero.btn2Text}
                    </Link>
                 </div>
