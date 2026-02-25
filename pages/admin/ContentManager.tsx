@@ -179,7 +179,7 @@ const isImageUrlField = (path: Path) => {
 };
 const isLinkUrlField = (path: Path) => {
   const key = String(path[path.length - 1] || '').toLowerCase();
-  if (!key.includes('url') && !key.includes('link') && key !== 'path') return false;
+  if (!key.includes('url') && !key.includes('link')) return false;
   if (key === 'fileurl') return false;
   if (key.includes('image') || key.includes('thumbnail') || key.includes('logo') || key.includes('avatar')) return false;
   return true;
@@ -188,7 +188,6 @@ const cleanLabel = (title: string, path: Path) => {
   const key = String(path[path.length - 1] || '').toLowerCase();
   if (key === 'content') return 'Mətn';
   if (key === 'excerpt') return 'Qısa mətn';
-  if (key === 'path') return 'Path URL';
   if (key.includes('image') || key.includes('thumbnail') || key.includes('logo') || key.includes('avatar')) return 'Şəkil';
   if (key === 'fileurl') return 'Fayl';
   if (key.includes('url') || key.includes('link')) return 'Link URL';
