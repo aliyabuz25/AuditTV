@@ -190,15 +190,82 @@ function normalizeSitemap(raw) {
     }))
     .filter((section) => section.title || section.content);
   const fallbackPrivacySections = [
-    { title: 'Toplanan məlumatlar', content: '' },
-    { title: 'Məlumatların istifadə məqsədi', content: '' },
-    { title: 'Məlumatların paylaşılması', content: '' },
+    {
+      title: 'Toplanan məlumatlar',
+      content:
+        'audit.tv platforması istifadəçi sorğularının idarə olunması, tədris xidmətlərinin təqdim edilməsi və kommunikasiya məqsədləri üçün ad, e-poçt ünvanı, telefon nömrəsi, müraciət məzmunu və texniki giriş məlumatlarını toplaya bilər.',
+    },
+    {
+      title: 'Məlumatların istifadə məqsədi',
+      content:
+        'Toplanan məlumatlar yalnız xidmətin təmin edilməsi, istifadəçi dəstəyi, təhlükəsizlik nəzarəti, hüquqi öhdəliklərin yerinə yetirilməsi və platformanın inkişafı məqsədilə emal olunur.',
+    },
+    {
+      title: 'Məlumatların paylaşılması',
+      content:
+        'Şəxsi məlumatlar qanunvericiliklə tələb edilən hallar istisna olmaqla üçüncü şəxslərə satılmır və icazəsiz şəkildə ötürülmür. Texniki infrastruktur və xidmət təminatı məqsədilə yalnız zəruri həcmdə tərəfdaş sistemlərdən istifadə edilə bilər.',
+    },
+    {
+      title: 'Saxlama müddəti və təhlükəsizlik',
+      content:
+        'Məlumatlar yalnız xidmət məqsədləri üçün lazım olan müddətdə saxlanılır. audit.tv məlumatların təhlükəsizliyini təmin etmək üçün texniki və inzibati tədbirlər tətbiq edir.',
+    },
+    {
+      title: 'İstifadəçi hüquqları',
+      content:
+        'İstifadəçilər öz şəxsi məlumatlarının yenilənməsi, düzəldilməsi və ya silinməsi barədə sorğu göndərə bilərlər. Sorğular əlaqə kanalları vasitəsilə qəbul edilir və mümkün ən qısa müddətdə cavablandırılır.',
+    },
+    {
+      title: 'Dəyişikliklər',
+      content: 'Bu siyasət zaman-zaman yenilənə bilər. Yenilənmiş mətn platformada dərc edildiyi andan etibarən qüvvəyə minir.',
+    },
   ];
   const fallbackTermsSections = [
-    { title: 'Ümumi müddəalar', content: '' },
-    { title: 'Xidmətə çıxış və hesab məsuliyyəti', content: '' },
-    { title: 'İntellektual mülkiyyət hüquqları', content: '' },
+    {
+      title: 'Ümumi müddəalar',
+      content:
+        'audit.tv platformasından istifadə etməklə bu şərtlərlə razı olduğunuzu təsdiq edirsiniz. Şərtlərlə razı olmadığınız halda platformadan istifadə etməməyiniz tövsiyə olunur.',
+    },
+    {
+      title: 'Xidmətə çıxış və hesab məsuliyyəti',
+      content:
+        'Tədris məzmununa çıxış kurs əsaslı təsdiq mexanizmi ilə təmin olunur. Hesab məlumatlarının məxfiliyinə istifadəçi cavabdehdir. İcazəsiz istifadə hallarında platforma çıxışı məhdudlaşdıra bilər.',
+    },
+    {
+      title: 'İntellektual mülkiyyət hüquqları',
+      content:
+        'Saytda yerləşdirilən məzmun, o cümlədən mətn, video, qrafik materiallar və sənədlər audit.tv və ya lisenziya sahibi tərəflərin hüquqları ilə qorunur. Yazılı icazə olmadan kopyalama və yayım qadağandır.',
+    },
+    {
+      title: 'Qadağan olunmuş fəaliyyətlər',
+      content:
+        'Platformanın işinə müdaxilə, icazəsiz giriş cəhdləri, texniki istismar, spam və ya digər qanunsuz fəaliyyətlər qəti şəkildə qadağandır və hüquqi tədbirlərə səbəb ola bilər.',
+    },
+    {
+      title: 'Məsuliyyətin məhdudlaşdırılması',
+      content:
+        'audit.tv xidmətlərin fasiləsizliyini təmin etməyə çalışsa da texniki nasazlıqlar, üçüncü tərəf xidmət kəsintiləri və ya istifadəçi tərəfli xətalar üzrə tam məsuliyyət daşımır.',
+    },
+    {
+      title: 'Dəyişikliklər və qüvvəyə minmə',
+      content:
+        'Şərtlər əvvəlcədən xəbərdarlıq edilmədən yenilənə bilər. Yenilənmiş mətnin platformada dərc olunması ilə yeni redaksiya qüvvəyə minmiş hesab olunur.',
+    },
   ];
+  const mergedPrivacySections =
+    normalizedPrivacySections.length > 0
+      ? normalizedPrivacySections.map((section, index) => ({
+          title: section.title || fallbackPrivacySections[index]?.title || `Bölmə ${index + 1}`,
+          content: section.content || fallbackPrivacySections[index]?.content || '',
+        }))
+      : fallbackPrivacySections;
+  const mergedTermsSections =
+    normalizedTermsSections.length > 0
+      ? normalizedTermsSections.map((section, index) => ({
+          title: section.title || fallbackTermsSections[index]?.title || `Bölmə ${index + 1}`,
+          content: section.content || fallbackTermsSections[index]?.content || '',
+        }))
+      : fallbackTermsSections;
 
   return {
     ...sitemap,
@@ -223,7 +290,7 @@ function normalizeSitemap(raw) {
       intro: 'Bu səhifədə audit.tv platformasında şəxsi məlumatların toplanması, istifadəsi və qorunması prinsipləri izah olunur.',
       sections: fallbackPrivacySections,
       ...privacyPolicy,
-      sections: normalizedPrivacySections.length > 0 ? normalizedPrivacySections : fallbackPrivacySections,
+      sections: mergedPrivacySections,
     },
     termsOfUse: {
       title: 'İstifadə Şərtləri',
@@ -231,7 +298,7 @@ function normalizeSitemap(raw) {
       intro: 'Bu səhifə platformadan istifadə zamanı hüquq və öhdəlikləri tənzimləyən əsas qaydaları ehtiva edir.',
       sections: fallbackTermsSections,
       ...termsOfUse,
-      sections: normalizedTermsSections.length > 0 ? normalizedTermsSections : fallbackTermsSections,
+      sections: mergedTermsSections,
     },
     settings: {
       ...settings,
