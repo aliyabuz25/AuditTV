@@ -983,14 +983,28 @@ function createBrandedEmailHtml({
 </html>`;
 }
 
+function resolveSubmissionCourseInfo(submission, sitemap) {
+  const courseId = asText(submission?.courseId);
+  const explicitCourseTitle = asText(submission?.courseTitle);
+  if (!courseId && !explicitCourseTitle) {
+    return { courseId: '', courseTitle: '' };
+  }
+
+  const courseTitle = explicitCourseTitle || getCourseTitleById(sitemap, courseId);
+  return { courseId, courseTitle };
+}
+
 function createMailHtml(submission, title, sitemap) {
+  const { courseId, courseTitle } = resolveSubmissionCourseInfo(submission, sitemap);
+  const includeCourseId = courseId && courseTitle && courseId !== courseTitle;
   const fields = [
     ['Növ', asText(title)],
     ['Ad', asText(submission.fullName)],
     ['Email', asText(submission.email)],
     ['Telefon', asText(submission.phone)],
     ['Mövzu', asText(submission.subject)],
-    ['Kurs ID', asText(submission.courseId)],
+    ['Kurs', asText(courseTitle || courseId)],
+    ['Kurs ID', includeCourseId ? asText(courseId) : ''],
     ['Status', asText(submission.status)],
     ['Tarix', asText(submission.timestamp)],
     ['Mesaj', asText(submission.message)],
@@ -1013,6 +1027,10 @@ async function sendSubmissionEmail(submission) {
     return { sent: false, reason: 'smtp_not_configured' };
   }
   const title = formatSubmissionType(submission.type);
+  const { courseId, courseTitle } = resolveSubmissionCourseInfo(submission, sitemap);
+  const includeCourseId = courseId && courseTitle && courseId !== courseTitle;
+  const courseLabel = courseTitle || courseId;
+  const courseSubjectSuffix = submission?.type === 'course' && courseLabel ? ` - ${courseLabel}` : '';
 
   let lastError = '';
   for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -1031,14 +1049,15 @@ async function sendSubmissionEmail(submission) {
         from: smtp.fromName ? `"${smtp.fromName}" <${smtp.fromEmail}>` : smtp.fromEmail,
         to,
         replyTo: asText(submission.email) || undefined,
-        subject: `[audit.tv] ${title}`,
+        subject: `[audit.tv] ${title}${courseSubjectSuffix}`,
         text: [
           `Növ: ${title}`,
           submission.fullName ? `Ad: ${submission.fullName}` : '',
           submission.email ? `Email: ${submission.email}` : '',
           submission.phone ? `Telefon: ${submission.phone}` : '',
           submission.subject ? `Mövzu: ${submission.subject}` : '',
-          submission.courseId ? `Kurs ID: ${submission.courseId}` : '',
+          courseLabel ? `Kurs: ${courseLabel}` : '',
+          includeCourseId ? `Kurs ID: ${courseId}` : '',
           submission.status ? `Status: ${submission.status}` : '',
           submission.timestamp ? `Tarix: ${submission.timestamp}` : '',
           submission.message ? `Mesaj: ${submission.message}` : '',
@@ -1499,7 +1518,15 @@ app.get('/api/course-requests', (_req, res) => {
       'SELECT email, full_name as fullName, password, course_id as courseId, status, timestamp, created_at as createdAt FROM course_requests ORDER BY created_at DESC',
     )
     .all();
-  res.json({ requests: rows });
+  const { sitemap } = getStoredSitemap();
+  const requests = rows.map((row) => {
+    const courseId = asText(row?.courseId);
+    return {
+      ...row,
+      courseTitle: courseId ? getCourseTitleById(sitemap, courseId) : '',
+    };
+  });
+  res.json({ requests });
 });
 
 app.get('/api/course-requests/check', (req, res) => {
@@ -1515,7 +1542,14 @@ app.get('/api/course-requests/check', (req, res) => {
       'SELECT email, full_name as fullName, password, course_id as courseId, status, timestamp, created_at as createdAt FROM course_requests WHERE email = ? AND course_id = ?',
     )
     .get(email, courseId);
-  res.json({ request: row || null });
+  const { sitemap } = getStoredSitemap();
+  const request = row
+    ? {
+        ...row,
+        courseTitle: asText(row?.courseId) ? getCourseTitleById(sitemap, row.courseId) : '',
+      }
+    : null;
+  res.json({ request });
 });
 
 app.post('/api/course-requests', async (req, res) => {
@@ -1527,6 +1561,8 @@ app.post('/api/course-requests', async (req, res) => {
 
   const timestamp = formatAzerbaijanDateTime();
   const createdAt = new Date().toISOString();
+  const { sitemap } = getStoredSitemap();
+  const resolvedCourseTitle = getCourseTitleById(sitemap, courseId);
   try {
     db.prepare(
       'INSERT INTO course_requests (email, full_name, password, course_id, status, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -1540,6 +1576,7 @@ app.post('/api/course-requests', async (req, res) => {
       subject: 'Kurs giriş müraciəti',
       message: '',
       courseId,
+      courseTitle: resolvedCourseTitle,
       status: status || 'pending',
       timestamp,
     };
@@ -1556,7 +1593,13 @@ app.post('/api/course-requests', async (req, res) => {
         'SELECT email, full_name as fullName, password, course_id as courseId, status, timestamp, created_at as createdAt FROM course_requests WHERE email = ? AND course_id = ?',
       )
       .get(email, courseId);
-    res.status(409).json({ error: 'Request already exists', request: existing });
+    const request = existing
+      ? {
+          ...existing,
+          courseTitle: asText(existing?.courseId) ? getCourseTitleById(sitemap, existing.courseId) : '',
+        }
+      : null;
+    res.status(409).json({ error: 'Request already exists', request });
   }
 });
 
@@ -1622,6 +1665,9 @@ app.post('/api/submissions', async (req, res) => {
   const timestamp = formatAzerbaijanDateTime();
   const createdAt = new Date().toISOString();
   const normalizedStatus = 'pending';
+  const normalizedCourseId = asText(courseId);
+  const { sitemap } = getStoredSitemap();
+  const resolvedCourseTitle = normalizedCourseId ? getCourseTitleById(sitemap, normalizedCourseId) : '';
 
   const info = db
     .prepare(
@@ -1635,7 +1681,7 @@ app.post('/api/submissions', async (req, res) => {
       asText(phone),
       asText(subject),
       asText(message),
-      asText(courseId),
+      normalizedCourseId,
       normalizedStatus,
       timestamp,
       createdAt,
@@ -1648,7 +1694,8 @@ app.post('/api/submissions', async (req, res) => {
     phone: asText(phone),
     subject: asText(subject),
     message: asText(message),
-    courseId: asText(courseId),
+    courseId: normalizedCourseId,
+    courseTitle: resolvedCourseTitle,
     status: normalizedStatus,
     timestamp,
   };
@@ -1663,6 +1710,7 @@ app.post('/api/submissions', async (req, res) => {
 });
 
 app.get('/api/requests', (_req, res) => {
+  const { sitemap } = getStoredSitemap();
   const courseRows = db
     .prepare(
       `SELECT
@@ -1699,9 +1747,15 @@ app.get('/api/requests', (_req, res) => {
     )
     .all();
 
-  const requests = [...courseRows, ...formRows].sort((a, b) =>
-    String(b.createdAt || '').localeCompare(String(a.createdAt || '')),
-  );
+  const requests = [...courseRows, ...formRows]
+    .map((row) => {
+      const courseId = asText(row?.courseId);
+      return {
+        ...row,
+        courseTitle: courseId ? getCourseTitleById(sitemap, courseId) : '',
+      };
+    })
+    .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
   res.json({ requests });
 });
 

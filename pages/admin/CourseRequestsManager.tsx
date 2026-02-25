@@ -14,6 +14,7 @@ interface RequestItem {
   subject?: string;
   message?: string;
   courseId?: string;
+  courseTitle?: string;
   status: string;
   timestamp: string;
   createdAt?: string;
@@ -38,7 +39,13 @@ const CourseRequestsManager: React.FC = () => {
     void loadRequests();
   }, []);
 
-  const getCourseTitle = (id: string) => sitemap.education.courses.find((c) => c.id === id)?.title || id;
+  const resolveCourseTitle = (item: Pick<RequestItem, 'courseId' | 'courseTitle'>) => {
+    const fromApi = String(item.courseTitle || '').trim();
+    if (fromApi) return fromApi;
+    const id = String(item.courseId || '').trim();
+    if (!id) return '-';
+    return sitemap.education.courses.find((c) => String(c.id) === id)?.title || id;
+  };
 
   const handlePrimaryAction = async (req: RequestItem) => {
     if (req.type === 'course') {
@@ -91,7 +98,7 @@ const CourseRequestsManager: React.FC = () => {
   const filteredRequests = useMemo(
     () =>
       requests.filter((r) =>
-        [r.type, r.fullName, r.email, r.subject, r.message, r.courseId]
+        [r.type, r.fullName, r.email, r.subject, r.message, r.courseId, r.courseTitle]
           .filter(Boolean)
           .join(' ')
           .toLowerCase()
@@ -127,7 +134,7 @@ const CourseRequestsManager: React.FC = () => {
       'Ad Soyad': req.fullName || 'Adsız',
       'E-poçt': req.email || '',
       GSM: req.phone || '',
-      'Mövzu / Kurs': req.type === 'course' ? getCourseTitle(String(req.courseId || '')) : req.subject || '',
+      'Mövzu / Kurs': req.type === 'course' ? resolveCourseTitle(req) : req.subject || '',
       'Mesaj (Qısa)': shortText(req.message),
       Status: toStatusLabel(req.status || ''),
       'Müraciət Tarixi': req.timestamp || '',
@@ -239,7 +246,7 @@ const CourseRequestsManager: React.FC = () => {
                     </td>
                     <td className="px-4 py-4 text-slate-600">
                       {req.type === 'course' ? (
-                        <div className="font-medium">{getCourseTitle(String(req.courseId || ''))}</div>
+                        <div className="font-medium">{resolveCourseTitle(req)}</div>
                       ) : (
                         <div className="max-w-[340px]">
                           <p className="font-bold">{req.subject || 'Mövzu yoxdur'}</p>
@@ -349,7 +356,7 @@ const CourseRequestsManager: React.FC = () => {
               {selectedRequest.courseId ? (
                 <div className="md:col-span-2">
                   <p className="text-[10px] uppercase tracking-wider font-black text-slate-400 mb-1">Kurs</p>
-                  <p className="font-bold text-slate-900 break-words [overflow-wrap:anywhere]">{getCourseTitle(selectedRequest.courseId)}</p>
+                  <p className="font-bold text-slate-900 break-words [overflow-wrap:anywhere]">{resolveCourseTitle(selectedRequest)}</p>
                 </div>
               ) : null}
 
