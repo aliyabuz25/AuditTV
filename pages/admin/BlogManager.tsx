@@ -180,12 +180,27 @@ const BlogManager: React.FC = () => {
         </h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           <div className="space-y-6">
-            <input
-              type="text"
-              value={pageHeader.title}
-              onChange={(e) => setPageHeader({ ...pageHeader, title: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 font-black text-slate-900 text-xl"
-            />
+            <div>
+              <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Giriş Etiketi (Badge)</label>
+              <input
+                type="text"
+                value={pageHeader.badge}
+                onChange={(e) => setPageHeader({ ...pageHeader, badge: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 font-bold text-primary-600 text-xs tracking-widest"
+              />
+            </div>
+            <div>
+              <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Bloq Başlığı (H1)</label>
+              <input
+                type="text"
+                value={pageHeader.title}
+                onChange={(e) => setPageHeader({ ...pageHeader, title: e.target.value })}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 font-black text-slate-900 text-xl"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Bloq İzahı (Subtext)</label>
             <textarea
               rows={3}
               value={pageHeader.sub}
