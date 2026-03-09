@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Star, Clock, Users, CheckCircle, ChevronDown, ChevronUp, Play, Lock, X, Mail, Shield, AlertCircle, Clock3, UserPlus, LogIn, Key, BookOpen } from 'lucide-react';
+import { Star, Clock, Users, CheckCircle, ChevronDown, ChevronUp, Play, Lock, X, Mail, Phone, Shield, Clock3, UserPlus, LogIn, Key, BookOpen } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
 import { useToast } from '../components/ToastProvider';
 import { CoursePerk } from '../types';
@@ -41,6 +41,7 @@ const CourseDetail: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [status, setStatus] = useState<'none' | 'pending' | 'approved'>('none');
   const [error, setError] = useState('');
   const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
@@ -131,7 +132,13 @@ const CourseDetail: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) return;
+    const normalizedPhone = phone.trim();
+    if (!email || !password || !normalizedPhone) {
+      const message = 'GSM nömrəsi mütləqdir.';
+      setError(message);
+      toast.error(message);
+      return;
+    }
 
     const checkResponse = await fetch(`${API_BASE}/api/course-requests/check?email=${encodeURIComponent(email)}&courseId=${encodeURIComponent(id || '')}`);
     const checkPayload = checkResponse.ok ? await checkResponse.json() : { request: null };
@@ -141,6 +148,7 @@ const CourseDetail: React.FC = () => {
       const newRequest = {
         email,
         fullName,
+        phone: normalizedPhone,
         password, 
         courseId: id,
         status: 'pending',
@@ -172,7 +180,7 @@ const CourseDetail: React.FC = () => {
         const retryResponse = await fetch(`${API_BASE}/api/course-requests`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, courseId: id, status: 'pending' }),
+          body: JSON.stringify({ email, courseId: id, status: 'pending', fullName, phone: normalizedPhone, password }),
         });
 
         if (!retryResponse.ok) {
@@ -195,7 +203,7 @@ const CourseDetail: React.FC = () => {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen pt-20">
+    <div className="bg-slate-50 min-h-screen pt-24">
       
       {/* Hero Section */}
       <section className="bg-slate-900 text-white py-20 relative overflow-hidden">
@@ -392,6 +400,18 @@ const CourseDetail: React.FC = () => {
                                 placeholder="nümunə@mail.com" 
                              />
                              <Mail className="absolute left-4 top-[2.4rem] text-slate-300" size={18} />
+                          </div>
+                          <div className="relative">
+                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">GSM Nömrəsi</label>
+                             <input 
+                                required
+                                type="tel"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 font-bold pl-12" 
+                                placeholder="+994 50 123 45 67" 
+                             />
+                             <Phone className="absolute left-4 top-[2.4rem] text-slate-300" size={18} />
                           </div>
                           <div className="relative">
                              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Şifrə təyin edin</label>

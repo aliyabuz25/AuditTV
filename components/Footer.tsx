@@ -42,7 +42,7 @@ const Footer: React.FC = () => {
           <div className="space-y-6">
             <Link to="/" className="flex items-center text-white font-bold text-lg">
               {logoUrl ? (
-                <img src={logoUrl} alt={siteName} className="h-14 w-auto max-w-[280px] object-contain" />
+                <img src={logoUrl} alt={siteName} className="h-20 w-auto max-w-[360px] object-contain scale-105 origin-left" />
               ) : null}
             </Link>
             <p className="text-neutral-500 leading-relaxed">{footer.aboutText}</p>

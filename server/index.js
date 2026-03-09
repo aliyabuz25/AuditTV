@@ -37,6 +37,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS course_requests (
     email TEXT NOT NULL,
     full_name TEXT,
+    phone TEXT,
     password TEXT,
     course_id TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending',
@@ -76,9 +77,14 @@ try {
   db.prepare('ALTER TABLE course_requests ADD COLUMN created_at TEXT').run();
 } catch {}
 
+try {
+  db.prepare('ALTER TABLE course_requests ADD COLUMN phone TEXT').run();
+} catch {}
+
 db.prepare("UPDATE course_requests SET created_at = ? WHERE created_at IS NULL OR TRIM(created_at) = ''").run(
   new Date().toISOString(),
 );
+db.prepare("UPDATE course_requests SET phone = '' WHERE phone IS NULL").run();
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS admin_users (
@@ -1515,7 +1521,7 @@ app.get('/api/uploads/pdfs', requireAdmin, (req, res) => {
 app.get('/api/course-requests', (_req, res) => {
   const rows = db
     .prepare(
-      'SELECT email, full_name as fullName, password, course_id as courseId, status, timestamp, created_at as createdAt FROM course_requests ORDER BY created_at DESC',
+      'SELECT email, full_name as fullName, phone, password, course_id as courseId, status, timestamp, created_at as createdAt FROM course_requests ORDER BY created_at DESC',
     )
     .all();
   const { sitemap } = getStoredSitemap();
@@ -1539,7 +1545,7 @@ app.get('/api/course-requests/check', (req, res) => {
 
   const row = db
     .prepare(
-      'SELECT email, full_name as fullName, password, course_id as courseId, status, timestamp, created_at as createdAt FROM course_requests WHERE email = ? AND course_id = ?',
+      'SELECT email, full_name as fullName, phone, password, course_id as courseId, status, timestamp, created_at as createdAt FROM course_requests WHERE email = ? AND course_id = ?',
     )
     .get(email, courseId);
   const { sitemap } = getStoredSitemap();
@@ -1553,9 +1559,9 @@ app.get('/api/course-requests/check', (req, res) => {
 });
 
 app.post('/api/course-requests', async (req, res) => {
-  const { email, fullName, password, courseId, status } = req.body || {};
-  if (!email || !password || !courseId) {
-    res.status(400).json({ error: 'email, password and courseId are required' });
+  const { email, fullName, phone, password, courseId, status } = req.body || {};
+  if (!email || !password || !courseId || !asText(phone)) {
+    res.status(400).json({ error: 'email, phone, password and courseId are required' });
     return;
   }
 
@@ -1565,14 +1571,14 @@ app.post('/api/course-requests', async (req, res) => {
   const resolvedCourseTitle = getCourseTitleById(sitemap, courseId);
   try {
     db.prepare(
-      'INSERT INTO course_requests (email, full_name, password, course_id, status, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    ).run(email, fullName || '', password, courseId, status || 'pending', timestamp, createdAt);
+      'INSERT INTO course_requests (email, full_name, phone, password, course_id, status, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    ).run(email, fullName || '', asText(phone), password, courseId, status || 'pending', timestamp, createdAt);
 
     const submission = {
       type: 'course',
       fullName: fullName || '',
       email,
-      phone: '',
+      phone: asText(phone),
       subject: 'Kurs giriş müraciəti',
       message: '',
       courseId,
@@ -1590,7 +1596,7 @@ app.post('/api/course-requests', async (req, res) => {
   } catch {
     const existing = db
       .prepare(
-        'SELECT email, full_name as fullName, password, course_id as courseId, status, timestamp, created_at as createdAt FROM course_requests WHERE email = ? AND course_id = ?',
+        'SELECT email, full_name as fullName, phone, password, course_id as courseId, status, timestamp, created_at as createdAt FROM course_requests WHERE email = ? AND course_id = ?',
       )
       .get(email, courseId);
     const request = existing
@@ -1604,7 +1610,7 @@ app.post('/api/course-requests', async (req, res) => {
 });
 
 app.patch('/api/course-requests', async (req, res) => {
-  const { email, courseId, status } = req.body || {};
+  const { email, courseId, status, fullName, phone, password } = req.body || {};
   if (!email || !courseId || !status) {
     res.status(400).json({ error: 'email, courseId and status are required' });
     return;
@@ -1618,7 +1624,14 @@ app.patch('/api/course-requests', async (req, res) => {
     return;
   }
 
-  db.prepare('UPDATE course_requests SET status = ? WHERE email = ? AND course_id = ?').run(status, email, courseId);
+  db.prepare(
+    `UPDATE course_requests
+     SET status = ?,
+         full_name = COALESCE(NULLIF(?, ''), full_name),
+         phone = COALESCE(NULLIF(?, ''), phone),
+         password = COALESCE(NULLIF(?, ''), password)
+     WHERE email = ? AND course_id = ?`,
+  ).run(status, asText(fullName), asText(phone), asText(password), email, courseId);
 
   const { sitemap } = getStoredSitemap();
   const mail = await sendStatusUpdateEmail({
@@ -1718,7 +1731,7 @@ app.get('/api/requests', (_req, res) => {
         'course' as type,
         email,
         full_name as fullName,
-        '' as phone,
+        phone,
         'Kurs giriş müraciəti' as subject,
         '' as message,
         course_id as courseId,

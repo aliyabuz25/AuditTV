@@ -56,7 +56,7 @@ const AdminLogin: React.FC = () => {
         <div className="text-center mb-10">
            <div className="inline-flex items-center mb-6">
               {logoUrl ? (
-                <img src={logoUrl} alt={siteName} className="h-12 w-auto max-w-[160px] object-contain" />
+                <img src={logoUrl} alt={siteName} className="h-16 w-auto max-w-[220px] object-contain scale-105" />
               ) : null}
            </div>
            <h2 className="text-2xl font-black text-slate-900">İdarəetmə Paneli</h2>
