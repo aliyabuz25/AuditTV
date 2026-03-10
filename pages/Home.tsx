@@ -60,10 +60,19 @@ const Home: React.FC = () => {
           subject: 'Newsletter abunəliyi',
         }),
       });
+      const payload = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
         throw new Error(String(payload.error || 'Abunəlik qeydə alınmadı'));
+      }
+
+      if (payload.mailSent === false) {
+        throw new Error(
+          String(
+            payload.mailMessage ||
+              'Abunəlik qeydə alındı, amma e-poçt bildirişi göndərilmədi. SMTP ayarlarını yoxlayın.',
+          ),
+        );
       }
 
       toast.success('Abunəliyiniz qeydə alındı. Yenilikləri e-poçtla göndərəcəyik.');

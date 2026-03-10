@@ -52,10 +52,19 @@ const ContactPage: React.FC = () => {
           message,
         }),
       });
+      const payload = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
         throw new Error(String(payload.error || 'Mesaj göndərilmədi'));
+      }
+
+      if (payload.mailSent === false) {
+        throw new Error(
+          String(
+            payload.mailMessage ||
+              'Müraciət qeydə alındı, amma e-poçt bildirişi göndərilmədi. SMTP ayarlarını yoxlayın.',
+          ),
+        );
       }
 
       toast.success('Mesajınız uğurla göndərildi. Tezliklə sizinlə əlaqə saxlayacağıq.');

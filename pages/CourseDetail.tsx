@@ -159,9 +159,18 @@ const CourseDetail: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newRequest),
       });
+      const payload = await submitResponse.json().catch(() => ({}));
       if (!submitResponse.ok) {
-        const payload = await submitResponse.json().catch(() => ({}));
         const message = String(payload.error || 'Müraciət göndərilərkən xəta baş verdi.');
+        setError(message);
+        toast.error(message);
+        return;
+      }
+      if (payload.mailSent === false) {
+        const message = String(
+          payload.mailMessage ||
+            'Müraciət qeydə alındı, amma e-poçt bildirişi göndərilmədi. SMTP ayarlarını yoxlayın.',
+        );
         setError(message);
         toast.error(message);
         return;
@@ -182,9 +191,20 @@ const CourseDetail: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, courseId: id, status: 'pending', fullName, phone: normalizedPhone, password }),
         });
+        const payload = await retryResponse.json().catch(() => ({}));
 
         if (!retryResponse.ok) {
-          const message = 'Müraciət yenilənərkən xəta baş verdi.';
+          const message = String(payload.error || 'Müraciət yenilənərkən xəta baş verdi.');
+          setError(message);
+          toast.error(message);
+          return;
+        }
+
+        if (payload.mailSent === false) {
+          const message = String(
+            payload.mailMessage ||
+              'Müraciət yeniləndi, amma e-poçt bildirişi göndərilmədi. SMTP ayarlarını yoxlayın.',
+          );
           setError(message);
           toast.error(message);
           return;

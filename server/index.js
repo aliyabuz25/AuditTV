@@ -1120,6 +1120,21 @@ function formatStatusLabel(status) {
   return asText(status) || '-';
 }
 
+function formatMailFailureReason(reason) {
+  const normalized = asText(reason);
+  if (!normalized) return 'E-poçt göndərişi baş tutmadı.';
+  if (normalized === 'smtp_not_configured') {
+    return 'SMTP ayarları tamamlanmayıb. Server, istifadəçi adı, şifrə və göndərən/alıcı e-poçt ayarlarını paneldən doldurun.';
+  }
+  if (normalized === 'recipient_email_missing') {
+    return 'Bildiriş üçün alıcı e-poçt ünvanı tapılmadı.';
+  }
+  if (normalized === 'mail_failed') {
+    return 'SMTP üzərindən e-poçt göndərişi baş tutmadı.';
+  }
+  return normalized;
+}
+
 function getCourseTitleById(sitemap, courseId) {
   const courses = Array.isArray(sitemap?.education?.courses) ? sitemap.education.courses : [];
   const match = courses.find((course) => String(course?.id) === String(courseId || ''));
@@ -1614,10 +1629,14 @@ app.post('/api/course-requests', async (req, res) => {
     };
 
     const mail = await sendSubmissionEmail(submission);
+    if (!mail.sent) {
+      console.warn('[mail] course request notification failed:', formatMailFailureReason(mail.reason));
+    }
     res.status(201).json({
       ok: true,
       mailSent: mail.sent,
       mailReason: mail.sent ? '' : mail.reason || 'mail_failed',
+      mailMessage: mail.sent ? 'E-poçt bildirişi göndərildi.' : formatMailFailureReason(mail.reason),
     });
   } catch {
     const existing = db
@@ -1670,7 +1689,16 @@ app.patch('/api/course-requests', async (req, res) => {
     subject: 'Kurs giriş müraciəti',
   });
 
-  res.json({ ok: true, mailSent: mail.sent, mailReason: mail.sent ? '' : mail.reason || 'mail_failed' });
+  if (!mail.sent) {
+    console.warn('[mail] course status update failed:', formatMailFailureReason(mail.reason));
+  }
+
+  res.json({
+    ok: true,
+    mailSent: mail.sent,
+    mailReason: mail.sent ? '' : mail.reason || 'mail_failed',
+    mailMessage: mail.sent ? 'E-poçt bildirişi göndərildi.' : formatMailFailureReason(mail.reason),
+  });
 });
 
 app.delete('/api/course-requests', (req, res) => {
@@ -1740,11 +1768,15 @@ app.post('/api/submissions', async (req, res) => {
   };
 
   const mail = await sendSubmissionEmail(submission);
+  if (!mail.sent) {
+    console.warn('[mail] form submission notification failed:', formatMailFailureReason(mail.reason));
+  }
   res.status(201).json({
     ok: true,
     id: info.lastInsertRowid,
     mailSent: mail.sent,
     mailReason: mail.sent ? '' : mail.reason || 'mail_failed',
+    mailMessage: mail.sent ? 'E-poçt bildirişi göndərildi.' : formatMailFailureReason(mail.reason),
   });
 });
 
@@ -1913,7 +1945,16 @@ app.patch('/api/submissions/:id', async (req, res) => {
     courseTitle: '',
   });
 
-  res.json({ ok: true, mailSent: mail.sent, mailReason: mail.sent ? '' : mail.reason || 'mail_failed' });
+  if (!mail.sent) {
+    console.warn('[mail] submission status update failed:', formatMailFailureReason(mail.reason));
+  }
+
+  res.json({
+    ok: true,
+    mailSent: mail.sent,
+    mailReason: mail.sent ? '' : mail.reason || 'mail_failed',
+    mailMessage: mail.sent ? 'E-poçt bildirişi göndərildi.' : formatMailFailureReason(mail.reason),
+  });
 });
 
 app.delete('/api/submissions/:id', (req, res) => {
