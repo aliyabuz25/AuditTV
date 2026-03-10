@@ -134,12 +134,12 @@ const SeoSmtpManager: React.FC = () => {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setSmtpTestError(String(payload.error || 'SMTP test uğursuz oldu.'));
+        setSmtpTestError(String(payload.error || 'SMTP sınağı uğursuz oldu.'));
         return;
       }
 
       const recipients = Array.isArray(payload.to) ? payload.to.join(', ') : normalizedNotifyEmails;
-      setSmtpTestMessage(`Test mail uğurla göndərildi: ${recipients}`);
+      setSmtpTestMessage(`Sınaq məktubu uğurla göndərildi: ${recipients}`);
       setSettings((prev) => ({
         ...prev,
         smtp: {
@@ -156,8 +156,8 @@ const SeoSmtpManager: React.FC = () => {
     <div className="space-y-10 pb-24">
       <header className="flex justify-between items-center sticky top-0 z-[60] bg-slate-50/80 backdrop-blur-xl py-5 border-b border-slate-200 -mx-10 px-10">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Footer Ayarları</h1>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Meta, mail və branding idarəetməsi</p>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">SEO, SMTP və Footer</h1>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Saytın meta, e-poçt və brend ayarlarını buradan idarə edin</p>
         </div>
         <button onClick={handleSave} className="bg-primary-600 text-white px-8 py-3.5 rounded-2xl font-black text-sm flex items-center gap-2 shadow-2xl shadow-primary-200 transition-all hover:scale-[1.02] active:scale-95">
           {saved ? <Check size={18} /> : <Save size={18} />} {saved ? 'Saxlanıldı' : 'Yadda Saxla'}
@@ -169,22 +169,22 @@ const SeoSmtpManager: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Site Title</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Sayt başlığı</label>
             <input value={settings.seo.title} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, title: e.target.value } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900" />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Canonical URL</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Kanonik keçid</label>
             <input value={settings.seo.canonicalUrl} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, canonicalUrl: e.target.value } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900" />
           </div>
         </div>
 
         <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Meta Description</label>
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Meta təsvir</label>
           <textarea rows={3} value={settings.seo.description} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, description: e.target.value } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700" />
         </div>
 
         <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Keywords (comma separated)</label>
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Açar sözlər (vergüllə ayırın)</label>
           <input value={settings.seo.keywords} onChange={(e) => setSettings({ ...settings, seo: { ...settings.seo, keywords: e.target.value } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700" />
         </div>
       </section>
@@ -194,36 +194,36 @@ const SeoSmtpManager: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Host</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">SMTP serveri</label>
             <input value={settings.smtp.host} onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp, host: e.target.value } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900" />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Port</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">SMTP portu</label>
             <input type="number" value={settings.smtp.port} onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp, port: Number(e.target.value || 0) } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900" />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Username</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">İstifadəçi adı</label>
             <input value={settings.smtp.username} onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp, username: e.target.value } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900" />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Password</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Şifrə</label>
             <input type="password" value={settings.smtp.password} onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp, password: e.target.value } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-900" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">From Email</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Göndərən e-poçt</label>
             <input value={settings.smtp.fromEmail} onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp, fromEmail: e.target.value } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700" />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">From Name</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Göndərən adı</label>
             <input value={settings.smtp.fromName} onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp, fromName: e.target.value } })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700" />
           </div>
         </div>
 
         <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Mail Alıcıları (TO)</label>
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Bildiriş alıcıları</label>
           <textarea
             rows={2}
             value={settings.smtp.notifyEmails || ''}
@@ -237,12 +237,12 @@ const SeoSmtpManager: React.FC = () => {
             placeholder="mail1@example.com, mail2@example.com"
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700"
           />
-          <p className="text-[11px] font-medium text-slate-400 mt-2">Form və müraciət bildirişləri bu email-lərə göndəriləcək (vergül ilə ayırın).</p>
+          <p className="text-[11px] font-medium text-slate-400 mt-2">Saytda doldurulan form və müraciətlər bu e-poçt ünvanlarına göndəriləcək. Ünvanları vergüllə ayırın.</p>
         </div>
 
         <label className="inline-flex items-center gap-2 text-sm font-bold text-slate-600">
           <input type="checkbox" checked={settings.smtp.secure} onChange={(e) => setSettings({ ...settings, smtp: { ...settings.smtp, secure: e.target.checked } })} />
-          Secure (TLS/SSL)
+          Təhlükəsiz bağlantı (TLS/SSL)
         </label>
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -252,7 +252,7 @@ const SeoSmtpManager: React.FC = () => {
             disabled={testingSmtp}
             className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-black uppercase tracking-widest disabled:opacity-60"
           >
-            {testingSmtp ? 'Test Göndərilir...' : 'Test Mail Göndər'}
+            {testingSmtp ? 'Sınaq göndərilir...' : 'Sınaq məktubu göndər'}
           </button>
           {smtpTestMessage ? <span className="text-xs font-bold text-emerald-700">{smtpTestMessage}</span> : null}
           {smtpTestError ? <span className="text-xs font-bold text-rose-600">{smtpTestError}</span> : null}
@@ -260,18 +260,18 @@ const SeoSmtpManager: React.FC = () => {
       </section>
 
       <section className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
-        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2"><ImageIcon size={14} className="text-primary-600" /> Site Logo</h3>
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2"><ImageIcon size={14} className="text-primary-600" /> Sayt loqosu</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           <div className="space-y-4">
             <div className="aspect-[4/2] bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center overflow-hidden">
               {settings.branding.logoUrl ? (
-                <img src={settings.branding.logoUrl} alt="Site logo" className="max-h-20 object-contain" />
+                <img src={settings.branding.logoUrl} alt="Sayt loqosu" className="max-h-20 object-contain" />
               ) : (
                 <div className="text-slate-400 text-sm font-bold">Logo yüklənməyib</div>
               )}
             </div>
-            <input value={settings.branding.logoUrl} onChange={(e) => setSettings({ ...settings, branding: { ...settings.branding, logoUrl: e.target.value } })} placeholder="Logo URL" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700" />
+            <input value={settings.branding.logoUrl} onChange={(e) => setSettings({ ...settings, branding: { ...settings.branding, logoUrl: e.target.value } })} placeholder="Loqo URL-i" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700" />
           </div>
 
           <div className="space-y-4">
@@ -288,7 +288,7 @@ const SeoSmtpManager: React.FC = () => {
                 if (file) void uploadLogo(file);
               }}
             />
-            <input value={settings.branding.siteName} onChange={(e) => setSettings({ ...settings, branding: { ...settings.branding, siteName: e.target.value } })} placeholder="Site adı" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700" />
+            <input value={settings.branding.siteName} onChange={(e) => setSettings({ ...settings, branding: { ...settings.branding, siteName: e.target.value } })} placeholder="Saytın adı" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-medium text-slate-700" />
           </div>
         </div>
       </section>

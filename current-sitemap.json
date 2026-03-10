@@ -615,7 +615,8 @@
       "password": "",
       "secure": false,
       "fromEmail": "no-reply@audit.tv",
-      "fromName": "audit.tv"
+      "fromName": "audit.tv",
+      "notifyEmails": "info@audit.tv"
     },
     "branding": {
       "logoUrl": "/uploads/1771681147235-999753825.png",

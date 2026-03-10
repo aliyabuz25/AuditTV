@@ -242,7 +242,7 @@ const AdminLayout: React.FC = () => {
           </button>
           <div className={`${SIDEBAR_GROUP_PANEL} ${openMenus.system ? 'max-h-36 opacity-100 pb-0.5' : 'max-h-0 opacity-0 pointer-events-none'}`}>
             <NavLink to="/admin/settings" className={({isActive}) => `${SIDEBAR_LINK_BASE} ${isActive ? SIDEBAR_LINK_ACTIVE : SIDEBAR_LINK_IDLE}`}>
-              <Settings size={SIDEBAR_ICON_SIZE} /> Footer
+              <Settings size={SIDEBAR_ICON_SIZE} /> SEO və SMTP
             </NavLink>
             <NavLink to="/admin/requests" className={({isActive}) => `${SIDEBAR_LINK_BASE} ${isActive ? SIDEBAR_LINK_ACTIVE : SIDEBAR_LINK_IDLE}`}>
               <Inbox size={SIDEBAR_ICON_SIZE} /> Müraciətlər

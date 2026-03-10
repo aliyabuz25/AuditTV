@@ -893,47 +893,47 @@ const ContentManager: React.FC = () => {
     };
 
     const seoCard = renderCard('SEO', Globe, [
-      renderSettingField(['settings', 'seo', 'title'], 'Title'),
-      renderSettingField(['settings', 'seo', 'description'], 'Description'),
-      renderSettingField(['settings', 'seo', 'keywords'], 'Keywords'),
-      renderSettingField(['settings', 'seo', 'canonicalUrl'], 'Canonical URL'),
+      renderSettingField(['settings', 'seo', 'title'], 'Sayt başlığı'),
+      renderSettingField(['settings', 'seo', 'description'], 'Meta təsvir'),
+      renderSettingField(['settings', 'seo', 'keywords'], 'Açar sözlər'),
+      renderSettingField(['settings', 'seo', 'canonicalUrl'], 'Kanonik keçid'),
     ]);
 
     const smtpCard = renderCard('SMTP', Mail, [
-      renderSettingField(['settings', 'smtp', 'host'], 'Host'),
-      renderSettingField(['settings', 'smtp', 'port'], 'Port'),
-      renderSettingField(['settings', 'smtp', 'username'], 'Username'),
-      renderSettingField(['settings', 'smtp', 'password'], 'Password'),
-      renderSettingField(['settings', 'smtp', 'secure'], 'Secure'),
-      renderSettingField(['settings', 'smtp', 'fromEmail'], 'From Email'),
-      renderSettingField(['settings', 'smtp', 'fromName'], 'From Name'),
-      renderSettingField(['settings', 'smtp', 'notifyEmails'], 'Notify Emails'),
+      renderSettingField(['settings', 'smtp', 'host'], 'SMTP serveri'),
+      renderSettingField(['settings', 'smtp', 'port'], 'SMTP portu'),
+      renderSettingField(['settings', 'smtp', 'username'], 'İstifadəçi adı'),
+      renderSettingField(['settings', 'smtp', 'password'], 'Şifrə'),
+      renderSettingField(['settings', 'smtp', 'secure'], 'Təhlükəsiz bağlantı'),
+      renderSettingField(['settings', 'smtp', 'fromEmail'], 'Göndərən e-poçt'),
+      renderSettingField(['settings', 'smtp', 'fromName'], 'Göndərən adı'),
+      renderSettingField(['settings', 'smtp', 'notifyEmails'], 'Bildiriş alıcıları'),
     ]);
 
-    const brandingCard = renderCard('Branding', Award, [
-      renderSettingField(['settings', 'branding', 'logoUrl'], 'Logo URL'),
-      renderSettingField(['settings', 'branding', 'siteName'], 'Site Name'),
+    const brandingCard = renderCard('Brend', Award, [
+      renderSettingField(['settings', 'branding', 'logoUrl'], 'Loqo URL-i'),
+      renderSettingField(['settings', 'branding', 'siteName'], 'Saytın adı'),
     ]);
 
     const footerCard = renderCard('Footer', FileText, [
-      renderSettingField(['settings', 'footer', 'aboutText'], 'About Text', true),
-      renderSettingField(['settings', 'footer', 'platformTitle'], 'Platform Title'),
-      renderSettingField(['settings', 'footer', 'resourcesTitle'], 'Resources Title'),
-      renderSettingField(['settings', 'footer', 'contactTitle'], 'Contact Title'),
-      renderSettingField(['settings', 'footer', 'address'], 'Address'),
-      renderSettingField(['settings', 'footer', 'phone'], 'Phone'),
-      renderSettingField(['settings', 'footer', 'email'], 'Email'),
+      renderSettingField(['settings', 'footer', 'aboutText'], 'Haqqında mətn', true),
+      renderSettingField(['settings', 'footer', 'platformTitle'], 'Platforma başlığı'),
+      renderSettingField(['settings', 'footer', 'resourcesTitle'], 'Resurslar başlığı'),
+      renderSettingField(['settings', 'footer', 'contactTitle'], 'Əlaqə başlığı'),
+      renderSettingField(['settings', 'footer', 'address'], 'Ünvan'),
+      renderSettingField(['settings', 'footer', 'phone'], 'Telefon'),
+      renderSettingField(['settings', 'footer', 'email'], 'E-poçt'),
       renderSettingField(['settings', 'footer', 'platformLinks'], 'Platform Linkləri', true),
       renderSettingField(['settings', 'footer', 'resourceLinks'], 'Resurs Linkləri', true),
       renderSettingField(['settings', 'footer', 'socialLinks', 'linkedin'], 'Linkedin'),
       renderSettingField(['settings', 'footer', 'socialLinks', 'facebook'], 'Facebook'),
       renderSettingField(['settings', 'footer', 'socialLinks', 'twitter'], 'Twitter'),
-      renderSettingField(['settings', 'footer', 'socialLinks', 'email'], 'Social Email'),
-      renderSettingField(['settings', 'footer', 'copyrightText'], 'Copyright Text', true),
-      renderSettingField(['settings', 'footer', 'privacyLabel'], 'Privacy Label'),
-      renderSettingField(['settings', 'footer', 'privacyUrl'], 'Privacy URL'),
-      renderSettingField(['settings', 'footer', 'termsLabel'], 'Terms Label'),
-      renderSettingField(['settings', 'footer', 'termsUrl'], 'Terms URL'),
+      renderSettingField(['settings', 'footer', 'socialLinks', 'email'], 'Sosial e-poçt'),
+      renderSettingField(['settings', 'footer', 'copyrightText'], 'Müəllif hüququ mətni', true),
+      renderSettingField(['settings', 'footer', 'privacyLabel'], 'Məxfilik etiketi'),
+      renderSettingField(['settings', 'footer', 'privacyUrl'], 'Məxfilik keçidi'),
+      renderSettingField(['settings', 'footer', 'termsLabel'], 'Şərtlər etiketi'),
+      renderSettingField(['settings', 'footer', 'termsUrl'], 'Şərtlər keçidi'),
     ]);
 
     const cards = [seoCard, smtpCard, brandingCard, footerCard].filter(Boolean);

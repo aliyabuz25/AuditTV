@@ -175,6 +175,9 @@ function readSitemapFromFile() {
 function normalizeSitemap(raw) {
   const sitemap = raw && typeof raw === 'object' ? raw : {};
   const settings = sitemap.settings && typeof sitemap.settings === 'object' ? sitemap.settings : {};
+  const seo = settings.seo && typeof settings.seo === 'object' ? settings.seo : {};
+  const smtp = settings.smtp && typeof settings.smtp === 'object' ? settings.smtp : {};
+  const branding = settings.branding && typeof settings.branding === 'object' ? settings.branding : {};
   const footer = settings.footer && typeof settings.footer === 'object' ? settings.footer : {};
   const home = sitemap.home && typeof sitemap.home === 'object' ? sitemap.home : {};
   const benefit = home.benefit && typeof home.benefit === 'object' ? home.benefit : {};
@@ -308,6 +311,29 @@ function normalizeSitemap(raw) {
     },
     settings: {
       ...settings,
+      seo: {
+        title: 'audit.tv - Bilik və Təcrübə Platforması',
+        description: 'Maliyyə savadlılığı və peşəkar inkişaf üçün onlayn media və tədris platforması.',
+        keywords: 'audit, vergi, maliyyə, podcast, tədris',
+        canonicalUrl: 'https://audit.tv',
+        ...seo,
+      },
+      smtp: {
+        host: '',
+        port: 587,
+        username: '',
+        password: '',
+        secure: false,
+        fromEmail: 'no-reply@audit.tv',
+        fromName: 'audit.tv',
+        notifyEmails: 'info@audit.tv',
+        ...smtp,
+      },
+      branding: {
+        logoUrl: '',
+        siteName: 'audit.tv',
+        ...branding,
+      },
       footer: {
         aboutText: 'Maliyyə savadlılığı və peşəkar inkişaf üçün onlayn media və tədris platforması.',
         platformTitle: 'Platforma',
@@ -668,7 +694,7 @@ function sendSharePreview(res, meta, req) {
 function formatSubmissionType(type) {
   if (type === 'course') return 'Kurs müraciəti';
   if (type === 'contact') return 'Əlaqə formu';
-  if (type === 'newsletter') return 'Newsletter abunəliyi';
+  if (type === 'newsletter') return 'Xəbər bülleteni abunəliyi';
   return 'Müraciət';
 }
 
@@ -781,7 +807,7 @@ function createBrandedEmailHtml({
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <meta name="supported-color-schemes" content="light dark" />
-    <title>${escapeHtml(siteName)} Mail</title>
+    <title>${escapeHtml(siteName)} Məktubu</title>
     <style>
       :root {
         color-scheme: light dark;
@@ -978,7 +1004,7 @@ function createBrandedEmailHtml({
             </tr>
             <tr>
               <td class="mail-footer" style="padding:12px 24px 24px 24px;color:#64748b;font-size:12px;line-height:1.6">
-                Bu email ${escapeHtml(siteName)} platforması tərəfindən avtomatik yaradılıb.
+                Bu e-poçt ${escapeHtml(siteName)} platforması tərəfindən avtomatik yaradılıb.
               </td>
             </tr>
           </table>
@@ -1004,23 +1030,23 @@ function createMailHtml(submission, title, sitemap) {
   const { courseId, courseTitle } = resolveSubmissionCourseInfo(submission, sitemap);
   const includeCourseId = courseId && courseTitle && courseId !== courseTitle;
   const fields = [
-    ['Növ', asText(title)],
-    ['Ad', asText(submission.fullName)],
-    ['Email', asText(submission.email)],
-    ['Telefon', asText(submission.phone)],
+    ['Müraciət növü', asText(title)],
+    ['Ad və soyad', asText(submission.fullName)],
+    ['E-poçt ünvanı', asText(submission.email)],
+    ['Telefon nömrəsi', asText(submission.phone)],
     ['Mövzu', asText(submission.subject)],
     ['Kurs', asText(courseTitle || courseId)],
-    ['Kurs ID', includeCourseId ? asText(courseId) : ''],
-    ['Status', asText(submission.status)],
-    ['Tarix', asText(submission.timestamp)],
+    ['Kurs kodu', includeCourseId ? asText(courseId) : ''],
+    ['Vəziyyət', formatStatusLabel(submission.status)],
+    ['Göndərilmə vaxtı', asText(submission.timestamp)],
     ['Mesaj', asText(submission.message)],
   ].filter(([, value]) => value);
 
   return createBrandedEmailHtml({
     sitemap,
-    badge: 'audit.tv Bildiriş',
+    badge: 'audit.tv Bildirişi',
     title,
-    intro: 'Sayt üzərindən yeni müraciət qeydə alındı. Aşağıda detalları görə bilərsiniz.',
+    intro: 'Sayt üzərindən yeni müraciət qeydə alındı. Aşağıda bütün detalları görə bilərsiniz.',
     fields,
   });
 }
@@ -1057,15 +1083,15 @@ async function sendSubmissionEmail(submission) {
         replyTo: asText(submission.email) || undefined,
         subject: `[audit.tv] ${title}${courseSubjectSuffix}`,
         text: [
-          `Növ: ${title}`,
-          submission.fullName ? `Ad: ${submission.fullName}` : '',
-          submission.email ? `Email: ${submission.email}` : '',
-          submission.phone ? `Telefon: ${submission.phone}` : '',
+          `Müraciət növü: ${title}`,
+          submission.fullName ? `Ad və soyad: ${submission.fullName}` : '',
+          submission.email ? `E-poçt ünvanı: ${submission.email}` : '',
+          submission.phone ? `Telefon nömrəsi: ${submission.phone}` : '',
           submission.subject ? `Mövzu: ${submission.subject}` : '',
           courseLabel ? `Kurs: ${courseLabel}` : '',
-          includeCourseId ? `Kurs ID: ${courseId}` : '',
-          submission.status ? `Status: ${submission.status}` : '',
-          submission.timestamp ? `Tarix: ${submission.timestamp}` : '',
+          includeCourseId ? `Kurs kodu: ${courseId}` : '',
+          submission.status ? `Vəziyyət: ${formatStatusLabel(submission.status)}` : '',
+          submission.timestamp ? `Göndərilmə vaxtı: ${submission.timestamp}` : '',
           submission.message ? `Mesaj: ${submission.message}` : '',
         ]
           .filter(Boolean)
@@ -1121,7 +1147,7 @@ async function sendStatusUpdateEmail({
   }
 
   const submissionType = formatSubmissionType(type);
-  const statusTitle = `${submissionType} statusunuz yeniləndi`;
+  const statusTitle = `${submissionType} üzrə vəziyyətiniz yeniləndi`;
   const changeTime = formatAzerbaijanDateTime();
 
   try {
@@ -1136,23 +1162,23 @@ async function sendStatusUpdateEmail({
     });
 
     const fields = [
-      ['Növ', submissionType],
-      ['Ad', asText(fullName) || '-'],
-      ['Əvvəlki status', formatStatusLabel(oldStatus)],
-      ['Yeni status', formatStatusLabel(newStatus)],
+      ['Müraciət növü', submissionType],
+      ['Ad və soyad', asText(fullName) || '-'],
+      ['Əvvəlki vəziyyət', formatStatusLabel(oldStatus)],
+      ['Yeni vəziyyət', formatStatusLabel(newStatus)],
       ['Mövzu', asText(subject) || '-'],
       ['Kurs', asText(courseTitle) || '-'],
-      ['Tarix', changeTime],
+      ['Yenilənmə vaxtı', changeTime],
     ];
 
     const text = [
       `Salam${asText(fullName) ? `, ${asText(fullName)}` : ''}!`,
-      `${submissionType} üzrə statusunuz yeniləndi.`,
-      `Əvvəlki status: ${formatStatusLabel(oldStatus)}`,
-      `Yeni status: ${formatStatusLabel(newStatus)}`,
+      `${submissionType} üzrə vəziyyətiniz yeniləndi.`,
+      `Əvvəlki vəziyyət: ${formatStatusLabel(oldStatus)}`,
+      `Yeni vəziyyət: ${formatStatusLabel(newStatus)}`,
       asText(subject) ? `Mövzu: ${asText(subject)}` : '',
       asText(courseTitle) ? `Kurs: ${asText(courseTitle)}` : '',
-      `Tarix: ${changeTime}`,
+      `Yenilənmə vaxtı: ${changeTime}`,
     ]
       .filter(Boolean)
       .join('\n');
@@ -1164,9 +1190,9 @@ async function sendStatusUpdateEmail({
       text,
       html: createBrandedEmailHtml({
         sitemap,
-        badge: 'Status Yeniləndi',
+        badge: 'Vəziyyət yeniləndi',
         title: statusTitle,
-        intro: 'Müraciətiniz üzrə status dəyişdirildi. Yenilənmiş məlumatlar aşağıdadır.',
+        intro: 'Müraciətiniz üzrə vəziyyət dəyişdirildi. Yenilənmiş məlumatlar aşağıdadır.',
         fields,
       }),
     });
@@ -1371,14 +1397,14 @@ app.post('/api/admin/smtp-test', requireAdmin, async (req, res) => {
   };
 
   if (!smtp.host || !smtp.port || !smtp.username || !smtp.password || !smtp.fromEmail) {
-    res.status(400).json({ error: 'SMTP ayarları tam deyil. Host, Port, Username, Password və From Email tələb olunur.' });
+    res.status(400).json({ error: 'SMTP ayarları tam deyil. Server, port, istifadəçi adı, şifrə və göndərən e-poçt tələb olunur.' });
     return;
   }
 
   const requestedTo = parseRecipientEmails(req.body?.to);
   const recipients = requestedTo.length > 0 ? requestedTo : parseRecipientEmails(smtp.notifyEmails);
   if (recipients.length === 0) {
-    res.status(400).json({ error: 'Test üçün ən azı bir alıcı email (TO) daxil edin.' });
+    res.status(400).json({ error: 'Sınaq üçün ən azı bir alıcı e-poçt ünvanı daxil edin.' });
     return;
   }
 
@@ -1396,25 +1422,25 @@ app.post('/api/admin/smtp-test', requireAdmin, async (req, res) => {
     await transporter.sendMail({
       from: smtp.fromName ? `"${smtp.fromName}" <${smtp.fromEmail}>` : smtp.fromEmail,
       to: recipients,
-      subject: '[audit.tv] SMTP Test Mail',
-      text: `SMTP test mail ugurla gonderildi.\nTarix: ${new Date().toISOString()}\nAlicilar: ${recipients.join(', ')}`,
+      subject: '[audit.tv] SMTP Sınaq Məktubu',
+      text: `SMTP sınaq məktubu uğurla göndərildi.\nTarix və vaxt: ${new Date().toISOString()}\nAlıcı ünvanları: ${recipients.join(', ')}`,
       html: createBrandedEmailHtml({
         sitemap,
-        badge: 'SMTP Test',
-        title: 'SMTP test mail uğurla göndərildi',
-        intro: 'Bu məktub SMTP ayarlarının işlədiyini təsdiqləmək üçün göndərildi.',
+        badge: 'SMTP sınağı',
+        title: 'SMTP sınaq məktubu uğurla göndərildi',
+        intro: 'Bu məktub SMTP ayarlarının düzgün işlədiyini təsdiqləmək üçün göndərildi.',
         fields: [
-          ['Tarix', new Date().toISOString()],
-          ['Alıcılar', recipients.join(', ')],
-          ['SMTP Host', smtp.host],
-          ['SMTP Port', String(smtp.port)],
+          ['Tarix və vaxt', new Date().toISOString()],
+          ['Alıcı ünvanları', recipients.join(', ')],
+          ['SMTP serveri', smtp.host],
+          ['SMTP portu', String(smtp.port)],
         ],
       }),
     });
 
     res.json({ ok: true, to: recipients });
   } catch (err) {
-    res.status(502).json({ error: err instanceof Error ? err.message : 'SMTP test ugursuz oldu' });
+    res.status(502).json({ error: err instanceof Error ? err.message : 'SMTP sınağı uğursuz oldu' });
   }
 });
 
