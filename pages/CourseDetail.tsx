@@ -314,11 +314,11 @@ const CourseDetail: React.FC = () => {
 
       {/* Unified Login / Registration Modal */}
       {isModalOpen && (
-         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
-            <div className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in fade-in duration-300">
+         <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-slate-900/80 p-4 backdrop-blur-md sm:items-center sm:p-6">
+            <div className="my-auto flex max-h-[calc(100vh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-[2.5rem] bg-white shadow-2xl animate-in zoom-in fade-in duration-300 sm:max-h-[calc(100vh-3rem)]">
                
                {/* Modal Header with Tabs */}
-               <div className="bg-slate-50 border-b border-slate-100 px-2 pt-2">
+               <div className="shrink-0 border-b border-slate-100 bg-slate-50 px-2 pt-2">
                   <div className="flex justify-end pr-2 pt-2">
                     <button onClick={closeModal} className="p-1 text-slate-400 hover:text-slate-900">
                        <X size={20} />
@@ -327,7 +327,7 @@ const CourseDetail: React.FC = () => {
                   <div className="flex px-4 mt-2">
                      <button 
                         onClick={() => { setActiveTab('login'); setError(''); setPassword(''); }}
-                        className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === 'login' ? 'text-primary-600' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`relative flex-1 py-3 text-[10px] font-black uppercase tracking-[0.18em] transition-all sm:py-4 sm:text-xs ${activeTab === 'login' ? 'text-primary-600' : 'text-slate-400 hover:text-slate-600'}`}
                      >
                         <div className="flex items-center justify-center gap-2">
                           <LogIn size={14} /> Daxil ol
@@ -336,7 +336,7 @@ const CourseDetail: React.FC = () => {
                      </button>
                      <button 
                         onClick={() => { setActiveTab('register'); setError(''); setPassword(''); }}
-                        className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === 'register' ? 'text-primary-600' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`relative flex-1 py-3 text-[10px] font-black uppercase tracking-[0.18em] transition-all sm:py-4 sm:text-xs ${activeTab === 'register' ? 'text-primary-600' : 'text-slate-400 hover:text-slate-600'}`}
                      >
                         <div className="flex items-center justify-center gap-2">
                           <UserPlus size={14} /> Qeydiyyatdan keç
@@ -346,114 +346,114 @@ const CourseDetail: React.FC = () => {
                   </div>
                </div>
 
-               <div className="p-10">
+               <div className="overflow-y-auto p-6 sm:p-10">
                   {error && (
-                    <div className="mb-6 p-5 bg-[#0c0a0a] border border-red-900/40 text-red-500 text-xs font-medium rounded-2xl animate-in fade-in duration-300 leading-relaxed shadow-lg">
+                    <div className="mb-5 rounded-2xl border border-red-900/40 bg-[#0c0a0a] p-4 text-[11px] font-medium leading-relaxed text-red-500 shadow-lg animate-in fade-in duration-300 sm:mb-6 sm:p-5 sm:text-xs">
                       {error}
                     </div>
                   )}
 
                   {activeTab === 'login' ? (
                     /* LOGIN FORM */
-                    <form onSubmit={handleLogin} className="space-y-6">
-                       <h3 className="text-2xl font-black text-slate-900 mb-2">Tələbə Girişi</h3>
-                       <p className="text-slate-400 text-xs font-medium mb-8 leading-relaxed">Yalnız bu kurs üçün girişi təsdiqlənmiş tələbələr daxil ola bilər.</p>
+                    <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
+                       <h3 className="mb-2 text-xl font-black text-slate-900 sm:text-2xl">Tələbə Girişi</h3>
+                       <p className="mb-6 text-[11px] font-medium leading-relaxed text-slate-400 sm:mb-8 sm:text-xs">Yalnız bu kurs üçün girişi təsdiqlənmiş tələbələr daxil ola bilər.</p>
                        
-                       <div className="space-y-4">
+                       <div className="space-y-3 sm:space-y-4">
                           <div className="relative">
-                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">E-poçt</label>
+                             <label className="mb-2 block text-[9px] font-black uppercase tracking-[0.18em] text-slate-400 sm:text-[10px]">E-poçt</label>
                              <input 
                                 required
                                 type="email" 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 font-bold pl-12" 
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pl-10 text-sm font-semibold text-slate-900 focus:border-primary-600 focus:outline-none sm:px-6 sm:py-4 sm:pl-12 sm:text-base" 
                                 placeholder="nümunə@mail.com" 
                              />
-                             <Mail className="absolute left-4 top-[2.4rem] text-slate-300" size={18} />
+                             <Mail className="absolute left-3 top-[2.15rem] text-slate-300 sm:left-4 sm:top-[2.4rem]" size={16} />
                           </div>
                           <div className="relative">
-                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Şifrə</label>
+                             <label className="mb-2 block text-[9px] font-black uppercase tracking-[0.18em] text-slate-400 sm:text-[10px]">Şifrə</label>
                              <input 
                                 required
                                 type="password" 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 font-bold pl-12" 
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pl-10 text-sm font-semibold text-slate-900 focus:border-primary-600 focus:outline-none sm:px-6 sm:py-4 sm:pl-12 sm:text-base" 
                                 placeholder="••••••" 
                              />
-                             <Key className="absolute left-4 top-[2.4rem] text-slate-300" size={18} />
+                             <Key className="absolute left-3 top-[2.15rem] text-slate-300 sm:left-4 sm:top-[2.4rem]" size={16} />
                           </div>
                        </div>
 
-                       <button type="submit" className="w-full py-5 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2">
+                       <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-sm font-black text-white shadow-xl shadow-slate-200 transition-all hover:bg-slate-800 sm:py-5 sm:text-base">
                           Giriş Et <LogIn size={18} />
                        </button>
                     </form>
                   ) : (
                     /* REGISTER / REQUEST FORM */
-                    <form onSubmit={handleRegisterRequest} className="space-y-6">
-                       <h3 className="text-2xl font-black text-slate-900 mb-2">Kurs Üçün Müraciət</h3>
-                       <p className="text-slate-400 text-xs font-medium mb-8 leading-relaxed">Hesab yaradın və yalnız bu kurs üçün giriş müraciəti göndərin.</p>
+                    <form onSubmit={handleRegisterRequest} className="space-y-5 sm:space-y-6">
+                       <h3 className="mb-2 text-xl font-black text-slate-900 sm:text-2xl">Kurs Üçün Müraciət</h3>
+                       <p className="mb-6 text-[11px] font-medium leading-relaxed text-slate-400 sm:mb-8 sm:text-xs">Hesab yaradın və yalnız bu kurs üçün giriş müraciəti göndərin.</p>
                        
-                       <div className="space-y-4">
+                       <div className="space-y-3 sm:space-y-4">
                           <div className="relative">
-                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Ad və Soyad</label>
+                             <label className="mb-2 block text-[9px] font-black uppercase tracking-[0.18em] text-slate-400 sm:text-[10px]">Ad və Soyad</label>
                              <input 
                                 required
                                 type="text" 
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 font-bold pl-12" 
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pl-10 text-sm font-semibold text-slate-900 focus:border-primary-600 focus:outline-none sm:px-6 sm:py-4 sm:pl-12 sm:text-base" 
                                 placeholder="Məsələn: Tural Rəhimli" 
                              />
-                             <Users className="absolute left-4 top-[2.4rem] text-slate-300" size={18} />
+                             <Users className="absolute left-3 top-[2.15rem] text-slate-300 sm:left-4 sm:top-[2.4rem]" size={16} />
                           </div>
                           <div className="relative">
-                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">E-poçt Ünvanı</label>
+                             <label className="mb-2 block text-[9px] font-black uppercase tracking-[0.18em] text-slate-400 sm:text-[10px]">E-poçt Ünvanı</label>
                              <input 
                                 required
                                 type="email" 
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 font-bold pl-12" 
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pl-10 text-sm font-semibold text-slate-900 focus:border-primary-600 focus:outline-none sm:px-6 sm:py-4 sm:pl-12 sm:text-base" 
                                 placeholder="nümunə@mail.com" 
                              />
-                             <Mail className="absolute left-4 top-[2.4rem] text-slate-300" size={18} />
+                             <Mail className="absolute left-3 top-[2.15rem] text-slate-300 sm:left-4 sm:top-[2.4rem]" size={16} />
                           </div>
                           <div className="relative">
-                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">GSM Nömrəsi</label>
+                             <label className="mb-2 block text-[9px] font-black uppercase tracking-[0.18em] text-slate-400 sm:text-[10px]">GSM Nömrəsi</label>
                              <input 
                                 required
                                 type="tel"
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 font-bold pl-12" 
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pl-10 text-sm font-semibold text-slate-900 focus:border-primary-600 focus:outline-none sm:px-6 sm:py-4 sm:pl-12 sm:text-base" 
                                 placeholder="+994 50 123 45 67" 
                              />
-                             <Phone className="absolute left-4 top-[2.4rem] text-slate-300" size={18} />
+                             <Phone className="absolute left-3 top-[2.15rem] text-slate-300 sm:left-4 sm:top-[2.4rem]" size={16} />
                           </div>
                           <div className="relative">
-                             <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Şifrə təyin edin</label>
+                             <label className="mb-2 block text-[9px] font-black uppercase tracking-[0.18em] text-slate-400 sm:text-[10px]">Şifrə təyin edin</label>
                              <input 
                                 required
                                 type="password" 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:border-primary-600 font-bold pl-12" 
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pl-10 text-sm font-semibold text-slate-900 focus:border-primary-600 focus:outline-none sm:px-6 sm:py-4 sm:pl-12 sm:text-base" 
                                 placeholder="••••••" 
                              />
-                             <Key className="absolute left-4 top-[2.4rem] text-slate-300" size={18} />
+                             <Key className="absolute left-3 top-[2.15rem] text-slate-300 sm:left-4 sm:top-[2.4rem]" size={16} />
                           </div>
                        </div>
 
-                       <button type="submit" className="w-full py-5 bg-primary-600 text-white font-black rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 flex items-center justify-center gap-2">
+                       <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary-600 py-3.5 text-sm font-black text-white shadow-xl shadow-primary-200 transition-all hover:bg-primary-700 sm:py-5 sm:text-base">
                           Müraciət et <Play size={18} fill="currentColor" />
                        </button>
                        
-                       <div className="p-4 bg-primary-50 rounded-xl border border-primary-100 flex gap-3">
+                       <div className="flex gap-3 rounded-xl border border-primary-100 bg-primary-50 p-3 sm:p-4">
                          <Shield className="text-primary-600 flex-shrink-0" size={16} />
-                         <p className="text-[10px] text-primary-700 font-bold leading-relaxed uppercase">
+                         <p className="text-[9px] font-bold uppercase leading-relaxed text-primary-700 sm:text-[10px]">
                            Ödəniş təsdiqləndikdən sonra yalnız bu kurs hesabınıza əlavə olunacaq.
                          </p>
                        </div>
