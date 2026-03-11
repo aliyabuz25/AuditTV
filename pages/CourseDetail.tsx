@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Star, Clock, Users, CheckCircle, ChevronDown, ChevronUp, Play, Lock, X, Mail, Phone, Shield, Clock3, UserPlus, LogIn, Key, BookOpen } from 'lucide-react';
 import { useSiteData } from '../site/SiteDataContext';
@@ -44,6 +44,8 @@ const CourseDetail: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [status, setStatus] = useState<'none' | 'pending' | 'approved'>('none');
   const [error, setError] = useState('');
+  const [modalScale, setModalScale] = useState(1);
+  const modalCardRef = useRef<HTMLDivElement | null>(null);
   const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 
   useEffect(() => {
@@ -61,6 +63,33 @@ const CourseDetail: React.FC = () => {
       setIsModalOpen(true);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      setModalScale(1);
+      return;
+    }
+
+    const updateModalScale = () => {
+      const modalCard = modalCardRef.current;
+      if (!modalCard) return;
+
+      const viewportHeight = window.innerHeight;
+      const availableHeight = Math.max(viewportHeight - 24, 1);
+      const contentHeight = modalCard.scrollHeight;
+      const nextScale = contentHeight > 0 ? Math.min(1, availableHeight / contentHeight) : 1;
+
+      setModalScale(nextScale);
+    };
+
+    const frameId = window.requestAnimationFrame(updateModalScale);
+    window.addEventListener('resize', updateModalScale);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', updateModalScale);
+    };
+  }, [activeTab, error, isModalOpen]);
 
   const checkAccessStatus = async (userEmail: string) => {
     const response = await fetch(`${API_BASE}/api/course-requests/check?email=${encodeURIComponent(userEmail)}&courseId=${encodeURIComponent(id || '')}`);
@@ -314,8 +343,12 @@ const CourseDetail: React.FC = () => {
 
       {/* Unified Login / Registration Modal */}
       {isModalOpen && (
-         <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-slate-900/80 p-4 backdrop-blur-md sm:items-center sm:p-6">
-            <div className="my-auto flex max-h-[calc(100vh-2rem)] w-full max-w-md flex-col overflow-hidden rounded-[2.5rem] bg-white shadow-2xl animate-in zoom-in fade-in duration-300 sm:max-h-[calc(100vh-3rem)]">
+         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 p-3 backdrop-blur-md sm:p-6">
+            <div
+               ref={modalCardRef}
+               className="flex w-full max-w-md flex-col overflow-hidden rounded-[2.5rem] bg-white shadow-2xl animate-in zoom-in fade-in duration-300"
+               style={{ transform: `scale(${modalScale})`, transformOrigin: 'center center' }}
+            >
                
                {/* Modal Header with Tabs */}
                <div className="shrink-0 border-b border-slate-100 bg-slate-50 px-2 pt-2">
@@ -346,7 +379,7 @@ const CourseDetail: React.FC = () => {
                   </div>
                </div>
 
-               <div className="overflow-y-auto p-6 sm:p-10">
+               <div className="p-6 sm:p-10">
                   {error && (
                     <div className="mb-5 rounded-2xl border border-red-900/40 bg-[#0c0a0a] p-4 text-[11px] font-medium leading-relaxed text-red-500 shadow-lg animate-in fade-in duration-300 sm:mb-6 sm:p-5 sm:text-xs">
                       {error}
